@@ -1,0 +1,96 @@
+name: vault
+
+releases:
+  - name: bosh-google-cpi
+    url: https://storage.googleapis.com/bosh-cpi-artifacts/bosh-google-cpi-25.1.0.tgz
+    sha1: f99dff6860731921282dd1bcd097a74beaeb72a4
+  - name: vault
+    url: https://bosh.io/d/github.com/cloudfoundry-community/vault-boshrelease?v=0.4.1
+    sha1: 1e44414639cfec645b2a6463f2aad2573752e65f
+  - name: consul
+    url: https://bosh.io/d/github.com/cloudfoundry-incubator/consul-release?v=115
+    sha1: 42fc3f437c62855c27c2e2d2edebff263e5aafbd
+
+resource_pools:
+  - name: micro
+    stemcell:
+      url: https://storage.googleapis.com/bosh-cpi-artifacts/light-bosh-stemcell-3262.5-google-kvm-ubuntu-trusty-go_agent.tgz
+      sha1: b7ed64f1a929b9a8e906ad5faaed73134dc68c53
+    network: dynamic
+    cloud_properties:
+      zone: us-central1-c
+      machine_type: f1-micro
+      root_disk_size_gb: 10
+      root_disk_type: pd-standard
+
+instance_groups:
+  - name: vault
+    instances: 1
+    networks:
+      - name: floating
+        static_ips: [((vault_public_ip))]
+      - name: dynamic
+        default: [dns, gateway]
+    resource_pool: micro
+    persistent_disk: 20
+    jobs:
+      - name: vault
+        release: vault
+        properties:
+          vault:
+            listener:
+              tcp:
+                tls:
+                  key: ((tls_key))
+                  certificate: ((tls_cert))
+            backend:
+              use_consul: true
+      - name: consul_agent
+        release: consul
+        properties:
+          consul:
+            agent:
+              domain: cf.internal
+              mode: server
+              servers:
+                - 127.0.0.1
+            ca_cert: ((consul_ca_cert))
+            agent_cert: ((consul_agent_cert))
+            agent_key: ((consul_agent_key))
+            server_cert: ((consul_server_cert))
+            server_key: ((consul_server_key))
+            encrypt_keys: [((consul_encryption_key))]
+
+networks:
+  - name: floating
+    type: vip
+  - name: dynamic
+    type: dynamic
+    cloud_properties:
+      network_name: vault
+      subnetwork_name: vault
+      tags:
+      - allow-ssh-ping-traceroute
+      - allow-bosh  # port 6868
+      - allow-vault # port 8200
+
+# CPI config
+cloud_provider:
+  template:
+    name: google_cpi
+    release: bosh-google-cpi
+
+  ssh_tunnel:
+    host: ((vault_public_ip))
+    port: 22
+    user: vcap
+    private_key: ../../tmp/vcap.pem
+
+  mbus: ((cpi_mbus_url))
+
+  properties:
+    google:
+      project: ((gce_project_id))
+    agent: { mbus: ((agent_mbus_url)) }
+    blobstore: {provider: local, path: /var/vcap/micro_bosh/data/cache}
+    ntp: [169.254.169.254]

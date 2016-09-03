@@ -1,0 +1,20 @@
+#!/bin/bash
+
+export VAULT_ADDR=https://<VAULT_PUBLIC_IP>:8200
+export VAULT_CACERT=<PATH_TO_YOUR_CERT>
+
+# initial setup
+vault init -key-shares=1 -key-threshold=1
+
+# WARNING: keep the root token and unseal key someplace safe!
+vault unseal
+
+# use root token to initially authenticate
+vault auth
+
+# setup an auth backend suitable for your environment
+vault auth-enable userpass
+
+# Additional Auth backends listed here:
+# https://www.vaultproject.io/docs/auth/index.html
+vault write auth/userpass/users/<YOUR_USERNAME> policies=admins password=<YOUR_PASSWORD>
