@@ -19,8 +19,8 @@ resource_pools:
     network: dynamic
     cloud_properties:
       zone: us-central1-c
-      machine_type: f1-micro
-      root_disk_size_gb: 10
+      machine_type: n1-standard-1
+      root_disk_size_gb: 20
       root_disk_type: pd-standard
 
 instance_groups:
