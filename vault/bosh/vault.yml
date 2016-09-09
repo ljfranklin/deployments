@@ -53,7 +53,8 @@ instance_groups:
               domain: cf.internal
               mode: server
               servers:
-                - 127.0.0.1
+                lan:
+                  - 127.0.0.1
             ca_cert: ((consul_ca_cert))
             agent_cert: ((consul_agent_cert))
             agent_key: ((consul_agent_key))
