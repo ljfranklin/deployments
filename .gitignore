@@ -1,2 +1,4 @@
 /tmp/
 /consul-certs/
+*.tfstate
+*.backup

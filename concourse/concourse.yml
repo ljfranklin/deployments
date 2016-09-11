@@ -1,0 +1,73 @@
+---
+name: concourse
+
+releases:
+- name: concourse
+  version: latest
+- name: garden-runc
+  version: latest
+
+# https://storage.googleapis.com/bosh-cpi-artifacts/light-bosh-stemcell-3262.12-google-kvm-ubuntu-trusty-go_agent.tgz
+stemcells:
+- alias: trusty
+  os: ubuntu-trusty
+  version: latest
+
+instance_groups:
+- name: concourse
+  instances: 1
+  vm_type: concourse
+  stemcell: trusty
+  azs: [z1]
+  persistent_disk_type: concourse
+  networks:
+    - name: public-concourse
+      default: [dns, gateway]
+    - name: floating
+      static_ips: [((concourse_floating_ip))]
+  jobs:
+    - name: atc
+      release: concourse
+      properties:
+        external_url: ((concourse_url))
+        bind_port: 80
+        tls_bind_port: 443
+        tls_cert: ((concourse_ssl_cert))
+        tls_key: ((concourse_ssl_key))
+        postgresql_database: &atc_db atc
+        github_auth:
+          client_id: ((github_client_id))
+          client_secret: ((github_client_secret))
+          authorize:
+            - user: ((github_username))
+    - name: tsa
+      release: concourse
+      properties: {}
+    - name: postgresql
+      release: concourse
+      properties:
+        databases:
+        - name: *atc_db
+          role: atc
+          password: ((concourse_db_password))
+    - name: groundcrew
+      release: concourse
+      properties:
+        tsa:
+          host: 127.0.0.1
+    - name: baggageclaim
+      release: concourse
+      properties: {}
+    - name: garden
+      release: garden-runc
+      properties:
+        garden:
+          listen_network: tcp
+          listen_address: 0.0.0.0:7777
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  serial: false
+  canary_watch_time: 1000-60000
+  update_watch_time: 1000-60000
