@@ -3,6 +3,11 @@ azs:
   cloud_properties: {zone: us-central1-c}
 
 vm_types:
+- name: small
+  cloud_properties:
+    machine_type: g1-small
+    root_disk_size_gb: 10
+    root_disk_type: pd-standard
 - name: concourse
   cloud_properties:
     cpu: 1
@@ -34,6 +39,16 @@ networks:
         tags:
           - bosh-internal
           - concourse-external
+  - name: public-vault
+    type: dynamic
+    subnets:
+    - az: z1
+      cloud_properties:
+        network_name: bosh
+        subnetwork_name: bosh
+        tags:
+          - bosh-internal
+          - vault-external
   - name: private
     type: dynamic
     subnets:
@@ -47,7 +62,7 @@ networks:
     type: vip
 
 disk_types:
-  - name: concourse
+  - name: 10GB
     disk_size: 10_240
     cloud_properties:
       type: pd-standard

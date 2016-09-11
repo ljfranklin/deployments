@@ -19,7 +19,7 @@ instance_groups:
   vm_type: concourse
   stemcell: trusty
   azs: [z1]
-  persistent_disk_type: concourse
+  persistent_disk_type: 10GB
   networks:
     - name: public-concourse
       default: [dns, gateway]

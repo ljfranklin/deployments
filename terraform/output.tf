@@ -13,3 +13,7 @@ output "bosh_external_ip" {
 output "concourse_external_ip" {
   value = "${google_compute_address.concourse.address}"
 }
+
+output "vault_external_ip" {
+  value = "${google_compute_address.vault.address}"
+}

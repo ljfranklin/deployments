@@ -1,0 +1,65 @@
+---
+name: vault
+
+releases:
+  - name: vault
+    url: https://bosh.io/d/github.com/cloudfoundry-community/vault-boshrelease?v=0.4.1
+    sha1: 1e44414639cfec645b2a6463f2aad2573752e65f
+    version: 0.4.1
+  - name: consul
+    url: https://bosh.io/d/github.com/cloudfoundry-incubator/consul-release?v=115
+    sha1: 42fc3f437c62855c27c2e2d2edebff263e5aafbd
+    version: 115
+
+stemcells:
+- alias: trusty
+  os: ubuntu-trusty
+  version: latest
+
+instance_groups:
+  - name: vault
+    instances: 1
+    vm_type: small
+    stemcell: trusty
+    azs: [z1]
+    persistent_disk_type: 10GB
+    networks:
+      - name: public-vault
+        default: [dns, gateway]
+      - name: floating
+        static_ips: [((vault_floating_ip))]
+    jobs:
+      - name: vault
+        release: vault
+        properties:
+          vault:
+            listener:
+              tcp:
+                tls:
+                  certificate: ((tls_cert))
+                  key: ((tls_key))
+            backend:
+              use_consul: true
+      - name: consul_agent
+        release: consul
+        properties:
+          consul:
+            agent:
+              domain: cf.internal
+              mode: server
+              servers:
+                lan:
+                  - 127.0.0.1
+            ca_cert: ((consul_ca_cert))
+            server_cert: ((consul_server_cert))
+            server_key: ((consul_server_key))
+            agent_cert: ((consul_agent_cert))
+            agent_key: ((consul_agent_key))
+            encrypt_keys: [((consul_encryption_key))]
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  serial: false
+  canary_watch_time: 1000-60000
+  update_watch_time: 1000-60000

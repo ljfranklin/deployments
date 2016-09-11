@@ -1,12 +1,15 @@
 #!/bin/bash
 
 export VAULT_ADDR=https://<VAULT_PUBLIC_IP>:8200
-export VAULT_CACERT=<PATH_TO_YOUR_CERT>
+export VAULT_CACERT=<PATH_TO_YOUR_CERT> # if using self-signed certs
 
 # initial setup
-vault init -key-shares=1 -key-threshold=1
+vault init -key-shares=1 -key-threshold=1 -pgp-keys="keybase:<YOUR_KEYBASE_USER>"
 
-# WARNING: keep the root token and unseal key someplace safe!
+# WARNING: keep the root token and encrypted unseal key someplace safe!
+brew install keybase
+keybase login
+echo "<YOUR_ENCRYPTED_UNSEAL_KEY>" | xxd -r -p | keybase pgp decrypt
 vault unseal
 
 # use root token to initially authenticate
