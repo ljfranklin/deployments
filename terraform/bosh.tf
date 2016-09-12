@@ -1,6 +1,7 @@
 provider "google" {
     project = "${var.projectid}"
     region = "${var.region}"
+    credentials = "${var.gce_credentials_json}"
 }
 
 provider "cloudflare" {
@@ -93,6 +94,10 @@ resource "google_compute_firewall" "bosh-internal" {
   }
   target_tags = ["bosh-internal"]
   source_tags = ["bosh-internal"]
+}
+
+resource "google_storage_bucket" "deployment-bucket" {
+  name = "${var.deployments_bucket_name}"
 }
 
 resource "google_compute_address" "director" {
