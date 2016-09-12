@@ -26,6 +26,13 @@ mv ./tmp/vcap.pem.pub ./tmp/vcap.pub
 
 Manually add a public wide SSH key with username `vcap`: https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys#project-wide
 
+**Enable GCS Interoperability:**
+
+Allow access to your Google Cloud Storage buckets via S3-compatible API:
+https://cloud.google.com/storage/docs/interoperability
+
+Create a new "Interoperable storage access key" and keep it somewhere safe.
+
 **Terraform environment:**
 
 ```bash
