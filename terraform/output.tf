@@ -1,3 +1,11 @@
+output "gce_region" {
+  value = "${var.gce_region}"
+}
+
+output "gce_zone" {
+  value = "${var.gce_zone}"
+}
+
 output "network_name" {
   value = "${google_compute_network.bosh.name}"
 }

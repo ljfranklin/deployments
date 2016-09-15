@@ -1,0 +1,60 @@
+#!/bin/bash
+
+set -eu
+
+deployments_dir="$( cd "$( dirname "$0" )" && cd ../../.. && pwd )"
+workspace_dir="$( cd "${deployments_dir}/.." && pwd )"
+
+# env
+: ${BOSH_DIRECTOR_SECRETS:?}
+
+# inputs
+terraform_config="$( cd "${workspace_dir}/terraform" && pwd )"
+cpi_dir="$( cd "${workspace_dir}/cpi-release" && pwd )"
+bosh_dir="$( cd "${workspace_dir}/bosh-release" && pwd )"
+stemcell_dir="$( cd "${workspace_dir}/stemcell" && pwd )"
+
+# outputs
+output_dir="$( cd "${workspace_dir}/updated-deployments-src" && pwd )"
+
+working_dir="$( cd "${deployments_dir}/bosh/" && pwd )"
+mkdir "${working_dir}/assets/"
+cp "${cpi_dir}/*.tgz" "${working_dir}/assets/cpi.tgz"
+cp "${bosh_dir}/*.tgz" "${working_dir}/assets/bosh.tgz"
+cp "${stemcell_dir}/*.tgz" "${working_dir}/assets/stemcell.tgz"
+
+function finish() {
+  pushd "${output_dir}" > /dev/null
+    echo "Checking whether state file has changed..."
+    cp ${working_dir}/*-state.json ./bosh/
+
+    set +e
+    git status --porcelain | grep '.*-state.json' 1> /dev/null
+    state_changed=$?
+    set -e
+
+    if [ "${state_changed}" == "0" ]; then
+      echo "Committing state file changes..."
+      git add ./bosh/*-state.json
+      git config --global user.email "lylejfranklin@gmail.com"
+      git config --global user.name "friendly-ci"
+      git commit -m ":airplane: Auto-commit: Updating Director deployment state"
+    fi
+
+    echo "Finished deploy director task!"
+  popd > /dev/null
+}
+trap finish EXIT
+
+pushd "${working_dir}" > /dev/null
+  echo "Updating director..."
+  bosh create-env \
+    -l <(echo ${BOSH_DIRECTOR_SECRETS}) \
+    -l "${terraform_config}/metadata" \
+    ./director.yml
+
+  echo "Updating cloud config..."
+  bosh update-cloud-config ./cloud-config.yml
+popd > /dev/null
+
+echo "Successfully updated director!"

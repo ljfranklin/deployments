@@ -8,6 +8,19 @@ jobs:
           env_name: lyle-deployments
           terraform_source: deployments-src/terraform/
 
+  - name: update-director
+    plan:
+      - get: deployments-src
+      - task: update-director
+        file: deployments-src/ci/setup-env/tasks/deploy-director.yml
+        params:
+          BOSH_DIRECTOR_SECRETS: {{bosh_director_secrets}}
+        ensure:
+          put: deployments-src
+          params:
+            repository: updated-deployments-src/
+            rebase: true
+
 resource_types:
   - name: terraform
     type: docker-image
@@ -18,7 +31,8 @@ resources:
   - name: deployments-src
     type: git
     source:
-      uri: https://github.com/ljfranklin/deployments
+      uri: git@github.com:ljfranklin/deployments.git
+      private_key: {{github_deploy_key}}
       branch: master
   - name: terraform
     type: terraform

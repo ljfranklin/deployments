@@ -6,9 +6,14 @@ variable "gce_credentials_json" {
     type = "string"
 }
 
-variable "region" {
+variable "gce_region" {
     type = "string"
     default = "us-central1"
+}
+
+variable "gce_zone" {
+    type = "string"
+    default = "us-central1-f"
 }
 
 variable "deployments_bucket_name" {
