@@ -17,7 +17,9 @@ stemcell_dir="$( cd "${workspace_dir}/stemcell" && pwd )"
 # outputs
 output_dir="$( cd "${workspace_dir}/updated-deployments-src" && pwd )"
 
-cp -R "${deployments_dir}/" "${output_dir}"
+pushd "${deployments_dir}" > /dev/null
+  cp -R . "${output_dir}/"
+popd > /dev/null
 
 working_dir="$( cd "${output_dir}/bosh/" && pwd )"
 mkdir "${working_dir}/assets/"
