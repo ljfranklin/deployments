@@ -17,7 +17,9 @@ stemcell_dir="$( cd "${workspace_dir}/stemcell" && pwd )"
 # outputs
 output_dir="$( cd "${workspace_dir}/updated-deployments-src" && pwd )"
 
-working_dir="$( cd "${deployments_dir}/bosh/" && pwd )"
+cp -R "${deployments_dir}/" "${output_dir}"
+
+working_dir="$( cd "${output_dir}/bosh/" && pwd )"
 mkdir "${working_dir}/assets/"
 cp "${cpi_dir}/*.tgz" "${working_dir}/assets/cpi.tgz"
 cp "${bosh_dir}/*.tgz" "${working_dir}/assets/bosh.tgz"
@@ -26,7 +28,6 @@ cp "${stemcell_dir}/*.tgz" "${working_dir}/assets/stemcell.tgz"
 function finish() {
   pushd "${output_dir}" > /dev/null
     echo "Checking whether state file has changed..."
-    cp ${working_dir}/*-state.json ./bosh/
 
     set +e
     git status --porcelain | grep '.*-state.json' 1> /dev/null
