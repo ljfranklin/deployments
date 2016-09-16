@@ -72,7 +72,7 @@ jobs:
           - dns
           - gateway
       - name: public
-        static_ips: [((external_ip))]
+        static_ips: [((bosh_external_ip))]
 
     properties:
       nats:
