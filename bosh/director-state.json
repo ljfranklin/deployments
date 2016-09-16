@@ -9,7 +9,7 @@
     "disks": [
         {
             "id": "6c8a984d-b924-4cc9-653d-aa2d12c2215c",
-            "cid": "disk-9f10d320-be39-4e9c-6e35-632441758b9f",
+            "cid": "disk-9f18a3e1-b1c0-49e9-56a2-27e57cf2d999",
             "size": 20000,
             "cloud_properties": {
                 "type": "pd-standard"
