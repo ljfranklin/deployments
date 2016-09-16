@@ -137,7 +137,7 @@ cloud_provider:
     release: bosh-google-cpi
 
   ssh_tunnel:
-    host: ((external_ip))
+    host: ((bosh_external_ip))
     port: 22
     user: vcap
     private_key: ((ssh_private_key))
