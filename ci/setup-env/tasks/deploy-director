@@ -22,10 +22,10 @@ pushd "${deployments_dir}" > /dev/null
 popd > /dev/null
 
 working_dir="$( cd "${output_dir}/bosh/" && pwd )"
-mkdir "${working_dir}/assets/"
-cp "${cpi_dir}/*.tgz" "${working_dir}/assets/cpi.tgz"
-cp "${bosh_dir}/*.tgz" "${working_dir}/assets/bosh.tgz"
-cp "${stemcell_dir}/*.tgz" "${working_dir}/assets/stemcell.tgz"
+mkdir -p "${working_dir}/assets/"
+cp ${cpi_dir}/*.tgz "${working_dir}/assets/cpi.tgz"
+cp ${bosh_dir}/*.tgz "${working_dir}/assets/bosh.tgz"
+cp ${stemcell_dir}/*.tgz "${working_dir}/assets/stemcell.tgz"
 
 function finish() {
   pushd "${output_dir}" > /dev/null
