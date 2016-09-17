@@ -19,7 +19,7 @@ terraform_config="$( cd "${workspace_dir}/terraform" && pwd )"
 cpi_dir="$( cd "${workspace_dir}/cpi-release" && pwd )"
 bosh_dir="$( cd "${workspace_dir}/bosh-release" && pwd )"
 stemcell_dir="$( cd "${workspace_dir}/stemcell" && pwd )"
-bosh_cli=${workspace_dir}/bosh-cli/bosh-cli-*
+bosh_cli=$( echo ${workspace_dir}/bosh-cli/bosh-cli-* )
 chmod +x "${bosh_cli}"
 
 # outputs
