@@ -31,13 +31,13 @@ output "vault_external_ip" {
 }
 
 output "bosh_hostname" {
-  value = "${google_compute_address.bosh-dns.hostname}"
+  value = "${cloudflare_record.bosh-dns.hostname}"
 }
 
 output "concourse_hostname" {
-  value = "${google_compute_address.concourse-dns.hostname}"
+  value = "${cloudflare_record.concourse-dns.hostname}"
 }
 
 output "vault_hostname" {
-  value = "${google_compute_address.vault-dns.hostname}"
+  value = "${cloudflare_record.vault-dns.hostname}"
 }
