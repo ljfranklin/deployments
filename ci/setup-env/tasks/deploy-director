@@ -46,6 +46,7 @@ function finish() {
     if [ "${state_changed}" == "0" ]; then
       echo "Committing state file changes..."
       git add ./bosh/*-state.json
+      git clean -df && git checkout -- . # clean slate to allow pull + rebase
       git config --global user.email "lylejfranklin@gmail.com"
       git config --global user.name "friendly-ci"
       git commit -m ":airplane: Auto-commit: Updating Director deployment state"
