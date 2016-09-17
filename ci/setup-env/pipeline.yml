@@ -10,7 +10,12 @@ jobs:
 
   - name: update-director
     plan:
-      - get: deployments-src
+      - aggregate:
+        - get: deployments-src
+        - get: stemcell
+        - get: bosh-release
+        - get: cpi-release
+        - get: terraform
       - task: update-director
         file: deployments-src/ci/setup-env/tasks/deploy-director.yml
         params:
@@ -34,6 +39,19 @@ resources:
       uri: git@github.com:ljfranklin/deployments.git
       private_key: {{github_deploy_key}}
       branch: master
+  - name: stemcell
+    type: s3
+    source:
+      bucket: bosh-gce-light-stemcells
+      regexp: light-bosh-stemcell-([0-9\.]+)-google-kvm-ubuntu-trusty-go_agent.tgz
+  - name: cpi-release
+    type: bosh-io-release
+    source:
+      repository: cloudfoundry-incubator/bosh-google-cpi-release
+  - name: bosh-release
+    type: bosh-io-release
+    source:
+      repository: cloudfoundry/bosh
   - name: terraform
     type: terraform
     source:
