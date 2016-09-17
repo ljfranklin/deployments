@@ -29,3 +29,15 @@ output "concourse_external_ip" {
 output "vault_external_ip" {
   value = "${google_compute_address.vault.address}"
 }
+
+output "bosh_hostname" {
+  value = "${google_compute_address.bosh-dns.hostname}"
+}
+
+output "concourse_hostname" {
+  value = "${google_compute_address.concourse-dns.hostname}"
+}
+
+output "vault_hostname" {
+  value = "${google_compute_address.vault-dns.hostname}"
+}
