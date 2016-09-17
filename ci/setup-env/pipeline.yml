@@ -15,6 +15,7 @@ jobs:
         - get: stemcell
         - get: bosh-release
         - get: cpi-release
+        - get: bosh-cli
         - get: terraform
       - task: update-director
         file: deployments-src/ci/setup-env/tasks/deploy-director.yml
@@ -52,6 +53,11 @@ resources:
     type: bosh-io-release
     source:
       repository: cloudfoundry/bosh
+  - name: bosh-cli
+    type: s3
+    source:
+      bucket: bosh-cli-artifacts
+      regexp: bosh-cli-(\d+\.\d+\.\d+)-linux-amd64
   - name: terraform
     type: terraform
     source:

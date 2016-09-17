@@ -19,6 +19,8 @@ terraform_config="$( cd "${workspace_dir}/terraform" && pwd )"
 cpi_dir="$( cd "${workspace_dir}/cpi-release" && pwd )"
 bosh_dir="$( cd "${workspace_dir}/bosh-release" && pwd )"
 stemcell_dir="$( cd "${workspace_dir}/stemcell" && pwd )"
+bosh_cli=${workspace_dir}/bosh-cli/bosh-cli-*
+chmod +x "${bosh_cli}"
 
 # outputs
 output_dir="$( cd "${workspace_dir}/updated-deployments-src" && pwd )"
@@ -59,7 +61,7 @@ trap finish EXIT
 
 pushd "${working_dir}" > /dev/null
   echo "Updating director..."
-  bosh -n create-env \
+  ${bosh_cli} -n create-env \
     -l <(echo "${BOSH_DIRECTOR_SECRETS}") \
     -l "${terraform_config}/metadata" \
     ./director.yml
@@ -68,7 +70,7 @@ pushd "${working_dir}" > /dev/null
   director_endpoint="$( jq -e -r .bosh_hostname "${terraform_config}/metadata" )"
   director_username="$( echo "${secrets_json}" | jq -e -r .director_admin_username )"
   director_password="$( echo "${secrets_json}" | jq -e -r .director_admin_password )"
-  bosh -n update-cloud-config \
+  ${bosh_cli} -n update-cloud-config \
     --environment "${director_endpoint}" \
     --user "${director_username}" \
     --password "${director_password}" \
