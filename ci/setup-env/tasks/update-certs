@@ -10,10 +10,10 @@ workspace_dir="$( cd "${deployments_dir}/.." && pwd )"
 : ${CLOUDFLARE_EMAIL:?}
 : ${CLOUDFLARE_DOMAINS:?}
 
-domain_flags=""
+domain_flags=()
 IFS=','
 for d in ${CLOUDFLARE_DOMAINS}; do
-  domain_flags+=" -d $d "
+  domain_flags+=("-d=$d")
 done
 
 # inputs
@@ -30,6 +30,6 @@ pushd "${output_dir}" > /dev/null
     --dns="cloudflare" \
     --path . \
     --server=https://acme-staging.api.letsencrypt.org/directory \
-    ${domain_flags} \
+    "${domain_flags[@]}" \
     run
 popd > /dev/null
