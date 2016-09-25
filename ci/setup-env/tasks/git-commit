@@ -18,12 +18,9 @@ input_dir="$( cd "${workspace_dir}/input-src" && pwd )"
 # outputs
 output_dir="$( cd "${workspace_dir}/output-src" && pwd )"
 
-git clone "${input_dir}" "${output_dir}"
-
-pushd "${output_dir}" > /dev/null
+pushd "${input_dir}" > /dev/null
   echo "Committing state file changes..."
   git add ${GIT_ADD_ARGS}
-  git clean -df && git checkout -- . # clean slate to allow pull + rebase
   git config --global user.email "${GIT_COMMIT_EMAIL}"
   git config --global user.name "${GIT_COMMIT_USERNAME}"
 
@@ -43,3 +40,5 @@ pushd "${output_dir}" > /dev/null
     echo "Successfully committed changes!"
   fi
 popd > /dev/null
+
+git clone "${input_dir}" "${output_dir}"
