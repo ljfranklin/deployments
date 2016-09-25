@@ -8,6 +8,7 @@ image_resource:
 
 inputs:
   - name: input-src
+  - name: deployments-src
 
 outputs:
   - name: output-src
