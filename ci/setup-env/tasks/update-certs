@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -eu
+
+deployments_dir="$( cd "$( dirname "$0" )" && cd ../../.. && pwd )"
+workspace_dir="$( cd "${deployments_dir}/.." && pwd )"
+
+# env
+: ${CLOUDFLARE_API_KEY:?}
+: ${CLOUDFLARE_EMAIL:?}
+: ${CLOUDFLARE_DOMAINS:?}
+
+domain_flags=""
+IFS=','
+for d in ${CLOUDFLARE_DOMAINS}; do
+  domain_flags+=" -d $d "
+done
+
+# inputs
+input_dir="$( cd "${workspace_dir}/input-src" && pwd )"
+
+# outputs
+output_dir="$( cd "${workspace_dir}/output-src" && pwd )"
+
+git clone "${input_dir}" "${output_dir}"
+
+pushd "${output_dir}" > /dev/null
+  lego --accept-tos \
+    --email="${CLOUDFLARE_EMAIL}" \
+    --dns="cloudflare" \
+    --path . \
+    --server=https://acme-staging.api.letsencrypt.org/directory \
+    ${domain_flags} \
+    run
+popd > /dev/null

@@ -1,0 +1,21 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: ljfranklin/deployments
+
+inputs:
+  - name: input-src
+
+outputs:
+  - name: output-src
+
+params:
+  CLOUDFLARE_API_KEY: ""
+  CLOUDFLARE_EMAIL:   ""
+  CLOUDFLARE_DOMAINS: ""
+
+run:
+  path: deployments-src/ci/setup-env/tasks/update-certs

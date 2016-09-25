@@ -27,6 +27,34 @@ jobs:
             repository: updated-deployments-src/
             rebase: true
 
+  - name: renew-certs
+    plan:
+      - aggregate:
+        - get: deployments-src
+        - get: ssl-certs
+      - task: update-certs
+        file: deployments-src/ci/setup-env/tasks/update-certs.yml
+        input_mapping: {input-src: ssl-certs}
+        output_mapping: {output-src: updated-ssl-certs}
+        params:
+          CLOUDFLARE_EMAIL:   {{cloudflare_email}}
+          CLOUDFLARE_API_KEY: {{cloudflare_token}}
+          CLOUDFLARE_DOMAINS: {{cloudflare_domains}}
+      - task: commit-certs
+        file: deployments-src/ci/setup-env/tasks/git-commit.yml
+        input_mapping: {input-src: updated-ssl-certs}
+        output_mapping: {output-src: committed-ssl-certs}
+        params:
+          GIT_ADD_ARGS: .
+          GIT_COMMIT_MSG: ":airplane: Auto-commit: Updating SSL Certs"
+          GIT_COMMIT_USERNAME: friendly-ci
+          GIT_COMMIT_EMAIL: {{git_commit_email}}
+          GIT_SUCCEED_ON_NO_CHANGES: true
+      # - put: ssl-certs
+      #   params:
+      #     repository: committed-ssl-certs/
+      #     rebase: true
+
 resource_types:
   - name: terraform
     type: docker-image
@@ -38,7 +66,13 @@ resources:
     type: git
     source:
       uri: git@github.com:ljfranklin/deployments.git
-      private_key: {{github_deploy_key}}
+      private_key: {{deployments_github_deploy_key}}
+      branch: master
+  - name: ssl-certs
+    type: git
+    source:
+      uri: git@github.com:ljfranklin/ssl_certs.git
+      private_key: {{ssl_certs_github_deploy_key}}
       branch: master
   - name: stemcell
     type: s3
@@ -73,4 +107,4 @@ resources:
         deployments_bucket_name: {{deployments_bucket_name}}
         cloudflare_email: {{cloudflare_email}}
         cloudflare_token: {{cloudflare_token}}
-        cloudflare_domain: {{cloudflare_domain}}
+        cloudflare_domain: {{cloudflare_root_domain}}
