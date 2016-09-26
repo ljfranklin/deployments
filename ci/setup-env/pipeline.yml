@@ -50,10 +50,10 @@ jobs:
           GIT_COMMIT_USERNAME: friendly-ci
           GIT_COMMIT_EMAIL: {{git_commit_email}}
           GIT_SUCCEED_ON_NO_CHANGES: true
-      # - put: ssl-certs
-      #   params:
-      #     repository: committed-ssl-certs/
-      #     rebase: true
+      - put: ssl-certs
+        params:
+          repository: committed-ssl-certs/
+          rebase: true
 
 resource_types:
   - name: terraform
