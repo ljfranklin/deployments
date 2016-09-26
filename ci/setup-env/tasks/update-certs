@@ -29,7 +29,7 @@ pushd "${output_dir}" > /dev/null
     --email="${CLOUDFLARE_EMAIL}" \
     --dns="cloudflare" \
     --path . \
-    --days=30 \
     "${domain_flags[@]}" \
-    renew
+    renew \
+    --days=30
 popd > /dev/null
