@@ -31,5 +31,5 @@ pushd "${output_dir}" > /dev/null
     --path . \
     "${domain_flags[@]}" \
     renew \
-    --days=30
+    --days=300
 popd > /dev/null
