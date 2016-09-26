@@ -8,6 +8,10 @@ workspace_dir="$( cd "${deployments_dir}/.." && pwd )"
 # env
 : ${BOSH_DIRECTOR_SECRETS:?}
 
+read_with_escaped_newlines() {
+  perl -pe 's|\n|\\n|' "$1"
+}
+
 yaml_to_json() {
   echo "$1" | ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load(ARGF))'
 }
@@ -65,8 +69,8 @@ pushd "${working_dir}" > /dev/null
   ${bosh_cli} -n create-env \
     -l <(echo "${BOSH_DIRECTOR_SECRETS}") \
     -l "${terraform_config}/metadata" \
-    -v ssl_cert="$( cat ${ssl_certs_dir}/certificates/*.crt )" \
-    -v ssl_key="$( cat ${ssl_certs_dir}/certificates/*.key )" \
+    -v ssl_cert="$( read_with_escaped_newlines ${ssl_certs_dir}/certificates/*.crt )" \
+    -v ssl_key="$( read_with_escaped_newlines ${ssl_certs_dir}/certificates/*.key )" \
     ./director.yml
 
   echo "Updating cloud config..."
