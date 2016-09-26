@@ -13,6 +13,7 @@ inputs:
   - name: cpi-release
   - name: stemcell
   - name: bosh-cli
+  - name: ssl-certs
 
 outputs:
   - name: updated-deployments-src

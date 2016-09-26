@@ -11,6 +11,8 @@ jobs:
   - name: update-director
     plan:
       - aggregate:
+        - get: ssl-certs
+          trigger: true
         - get: deployments-src
         - get: stemcell
         - get: bosh-release

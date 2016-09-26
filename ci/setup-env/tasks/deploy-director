@@ -19,6 +19,7 @@ terraform_config="$( cd "${workspace_dir}/terraform" && pwd )"
 cpi_dir="$( cd "${workspace_dir}/cpi-release" && pwd )"
 bosh_dir="$( cd "${workspace_dir}/bosh-release" && pwd )"
 stemcell_dir="$( cd "${workspace_dir}/stemcell" && pwd )"
+ssl_certs_dir="$( cd "${workspace_dir}/ssl-certs" && pwd )"
 bosh_cli=$( echo ${workspace_dir}/bosh-cli/bosh-cli-* )
 chmod +x "${bosh_cli}"
 
@@ -64,6 +65,8 @@ pushd "${working_dir}" > /dev/null
   ${bosh_cli} -n create-env \
     -l <(echo "${BOSH_DIRECTOR_SECRETS}") \
     -l "${terraform_config}/metadata" \
+    -v ssl_cert="$( cat ${ssl_certs_dir}/certificates/*.crt )" \
+    -v ssl_key="$( cat ${ssl_certs_dir}/certificates/*.key )" \
     ./director.yml
 
   echo "Updating cloud config..."
