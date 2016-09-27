@@ -46,6 +46,8 @@ jobs:
       - aggregate:
         - get: deployments-src
         - get: ssl-certs
+        - get: midnight
+          trigger: true
       - task: update-certs
         file: deployments-src/ci/setup-env/tasks/update-certs.yml
         input_mapping: {input-src: ssl-certs}
@@ -122,3 +124,9 @@ resources:
         cloudflare_email: {{cloudflare_email}}
         cloudflare_token: {{cloudflare_token}}
         cloudflare_domain: {{cloudflare_root_domain}}
+  - name: midnight
+    type: time
+    source:
+      location: US/Pacific
+      start: 12:00 AM
+      stop: 2:00 AM
