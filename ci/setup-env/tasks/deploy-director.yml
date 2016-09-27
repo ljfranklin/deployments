@@ -16,7 +16,7 @@ inputs:
   - name: ssl-certs
 
 outputs:
-  - name: updated-deployments-src
+  - name: output-src
 
 params:
   BOSH_DIRECTOR_SECRETS: ""

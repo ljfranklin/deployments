@@ -21,13 +21,25 @@ jobs:
         - get: terraform
       - task: update-director
         file: deployments-src/ci/setup-env/tasks/deploy-director.yml
+        output_mapping: {output-src: updated-deployments-src}
         params:
           BOSH_DIRECTOR_SECRETS: {{bosh_director_secrets}}
         ensure:
-          put: deployments-src
-          params:
-            repository: updated-deployments-src/
-            rebase: true
+          do:
+          - task: commit-state-file
+            file: deployments-src/ci/setup-env/tasks/git-commit.yml
+            input_mapping: {input-src: updated-deployments-src}
+            output_mapping: {output-src: committed-deployments-src}
+            params:
+              GIT_ADD_ARGS: ./bosh/director-state.json
+              GIT_COMMIT_MSG: ":airplane: Auto-commit: Updating Director deployment state"
+              GIT_COMMIT_USERNAME: friendly-ci
+              GIT_COMMIT_EMAIL: {{git_commit_email}}
+              GIT_SUCCEED_ON_NO_CHANGES: true
+          - put: deployments-src
+            params:
+              repository: committed-deployments-src/
+              rebase: true
 
   - name: renew-certs
     plan:
