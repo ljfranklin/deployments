@@ -39,16 +39,6 @@ networks:
         tags:
           - bosh-internal
           - concourse-external
-  - name: public-vault
-    type: dynamic
-    subnets:
-    - az: z1
-      cloud_properties:
-        network_name: bosh
-        subnetwork_name: bosh
-        tags:
-          - bosh-internal
-          - vault-external
   - name: private
     type: dynamic
     subnets:
