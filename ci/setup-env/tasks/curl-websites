@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -eu
+
+: ${URLS_TO_CURL:?}
+
+IFS=',' ; for url in ${URLS_TO_CURL}; do
+  echo "Checking '${url}'..."
+  curl --fail --silent --show-error --max-time 10 "${url}" > /dev/null
+done
+echo "Successfully reached all websites!"

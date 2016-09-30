@@ -71,7 +71,7 @@ jobs:
         - aggregate:
           - get: deployments-src
           - get: ssl-certs
-          - get: midnight
+          - get: sunday-night
             trigger: true
         - task: update-certs
           file: deployments-src/ci/setup-env/tasks/update-certs.yml
@@ -96,6 +96,18 @@ jobs:
             repository: committed-ssl-certs/
             rebase: true
         on_success: *success-alert
+        on_failure: *failure-alert
+
+  - name: curl-websites
+    plan:
+      - do:
+        - get: 5m
+          trigger: true
+        - get: deployments-src
+        - task: curl-websites
+          file: deployments-src/ci/setup-env/tasks/curl-websites.yml
+          params:
+            URLS_TO_CURL: {{urls_to_curl}}
         on_failure: *failure-alert
 
 resource_types:
@@ -164,12 +176,17 @@ resources:
         cloudflare_email: {{cloudflare_email}}
         cloudflare_token: {{cloudflare_token}}
         cloudflare_domain: {{cloudflare_root_domain}}
-  - name: midnight
+  - name: 5m
+    type: time
+    source:
+      interval: 5m
+  - name: sunday-night
     type: time
     source:
       location: US/Pacific
       start: 12:00 AM
       stop: 2:00 AM
+      days: [Sunday]
   - name: slack-alert
     type: slack-notification
     source:

@@ -1,0 +1,16 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: ljfranklin/deployments
+
+inputs:
+  - name: deployments-src
+
+params:
+  URLS_TO_CURL: ""
+
+run:
+  path: deployments-src/ci/setup-env/tasks/curl-websites
