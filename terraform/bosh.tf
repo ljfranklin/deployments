@@ -63,19 +63,6 @@ resource "google_compute_firewall" "allow-concourse" {
   target_tags = ["concourse-external"]
 }
 
-// Allow Vault access
-resource "google_compute_firewall" "allow-vault" {
-  name    = "allow-vault"
-  network = "${google_compute_network.bosh.name}"
-
-  allow {
-    protocol = "tcp"
-    ports    = ["8200"]
-  }
-
-  target_tags = ["vault-external"]
-}
-
 // Allow open access between internal VMs
 resource "google_compute_firewall" "bosh-internal" {
   name    = "bosh-internal"
@@ -108,10 +95,6 @@ resource "google_compute_address" "concourse" {
   name = "concourse-ip"
 }
 
-resource "google_compute_address" "vault" {
-  name = "vault-ip"
-}
-
 resource "cloudflare_record" "bosh-dns" {
     domain = "${var.cloudflare_domain}"
     name = "bosh"
@@ -124,14 +107,6 @@ resource "cloudflare_record" "concourse-dns" {
     domain = "${var.cloudflare_domain}"
     name = "concourse"
     value = "${google_compute_address.concourse.address}"
-    type = "A"
-    proxied = false
-}
-
-resource "cloudflare_record" "vault-dns" {
-    domain = "${var.cloudflare_domain}"
-    name = "vault"
-    value = "${google_compute_address.vault.address}"
     type = "A"
     proxied = false
 }
