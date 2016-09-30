@@ -14,6 +14,13 @@ shared:
       icon_emoji: ":rocket:"
       text: |
         *The <$ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME> job passed!*
+  - &update-assets-alert
+    put: slack-alert
+    params:
+      silent: true
+      icon_url: "https://avatars1.githubusercontent.com/u/7809479?v=3&s=200"
+      text: |
+        *A new version of Concourse is available! Run `bosh deploy` to upgrade.*
 
 jobs:
   - name: update-terraform
@@ -65,6 +72,27 @@ jobs:
                 repository: committed-deployments-src/
                 rebase: true
         on_success: *success-alert
+        on_failure: *failure-alert
+
+  - name: upload-concourse-assets
+    plan:
+      - do:
+        - aggregate:
+          - get: concourse-and-garden
+            trigger: true
+            params:
+              globs: ['concourse-*.tgz','garden-runc-*.tgz']
+          - get: stemcell
+          - get: bosh-cli
+            resource: bosh-cli-tmp
+        - task: upload-bosh-assets
+          file: deployments-src/ci/setup-env/tasks/upload-bosh-assets.yml
+          input_mapping: {assets: concourse-and-garden}
+          params:
+            BOSH_DIRECTOR_SECRETS: {{bosh_director_secrets}}
+            RELEASE_GLOBS:         "assets/concourse-*.tgz assets/garden-runc-*.tgz"
+            STEMCELL_GLOB:         "stemcell/*.tgz"
+        on_success: *update-assets-alert
         on_failure: *failure-alert
 
   - name: renew-certs
