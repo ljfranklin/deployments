@@ -10,6 +10,10 @@ releases:
     url: https://bosh.io/d/github.com/cloudfoundry-incubator/consul-release?v=115
     sha1: 42fc3f437c62855c27c2e2d2edebff263e5aafbd
     version: 115
+  - name: nginx
+    url: https://github.com/cloudfoundry-community/nginx-release/releases/download/v4/nginx-4.tgz
+    sha1: cc0523d6b13d0e7cfed324610843d27a2df66826
+    version: 4
 
 stemcells:
 - alias: trusty
@@ -56,6 +60,41 @@ instance_groups:
             agent_cert: ((consul_agent_cert))
             agent_key: ((consul_agent_key))
             encrypt_keys: [((consul_encryption_key))]
+      - name: nginx
+        release: nginx
+        properties:
+          nginx_conf: |
+            worker_processes  1;
+            events {
+              worker_connections  1024;
+            }
+            http {
+              include /var/vcap/packages/nginx/conf/mime.types;
+              # redirect HTTP to HTTPS
+              server {
+                server_name _;
+                listen 80 default_server;
+                return 301 https://$host$request_uri;
+              }
+              server {
+                server_name _;
+                listen              443 ssl default_server;
+                ssl_certificate     /var/vcap/jobs/nginx/etc/ssl_chained.crt.pem;
+                ssl_certificate_key /var/vcap/jobs/nginx/etc/ssl.key.pem;
+                root /var/vcap/store/nginx;
+                index index.shtml index.html index.htm;
+              }
+            }
+          ssl_chained_cert: ((tls_cert))
+          ssl_key: ((tls_key))
+          pre_start: |
+            #!/bin/bash -ex
+            NGINX_DIR=/var/vcap/store/nginx
+            rm -rf "${NGINX_DIR}"
+            mkdir -p "${NGINX_DIR}"
+            curl -L https://github.com/AMeng/vault-web/archive/v0.1.tar.gz |
+              tar xzf - -C "${NGINX_DIR} --strip-components=1 -- src/"
+            chown -R vcap:vcap "${NGINX_DIR}"
 
 update:
   canaries: 1
