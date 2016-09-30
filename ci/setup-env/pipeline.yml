@@ -1,4 +1,20 @@
 ---
+shared:
+  - &failure-alert
+    put: slack-alert
+    params:
+      silent: true
+      icon_emoji: ":interrobang:"
+      text: |
+        *The <$ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME> job failed!*
+  - &success-alert
+    put: slack-alert
+    params:
+      silent: true
+      icon_emoji: ":rocket:"
+      text: |
+        *The <$ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_JOB_NAME> job passed!*
+
 jobs:
   - name: update-terraform
     plan:
@@ -8,14 +24,8 @@ jobs:
           params:
             env_name: lyle-deployments
             terraform_source: deployments-src/terraform/
-        on_failure:
-          put: slack-alert
-          params:
-            silent: true
-            icon_emoji: ":interrobang:"
-            text: |
-              *The '$BUILD_JOB_NAME' build failed!*
-              $ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+        on_success: *success-alert
+        on_failure: *failure-alert
 
   - name: update-director
     plan:
@@ -52,14 +62,8 @@ jobs:
               params:
                 repository: committed-deployments-src/
                 rebase: true
-        on_failure:
-          put: slack-alert
-          params:
-            silent: true
-            icon_emoji: ":interrobang:"
-            text: |
-              *The '$BUILD_JOB_NAME' build failed!*
-              $ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+        on_success: *success-alert
+        on_failure: *failure-alert
 
   - name: renew-certs
     plan:
@@ -91,14 +95,8 @@ jobs:
           params:
             repository: committed-ssl-certs/
             rebase: true
-        on_failure:
-          put: slack-alert
-          params:
-            silent: true
-            icon_emoji: ":interrobang:"
-            text: |
-              *The '$BUILD_JOB_NAME' build failed!*
-              $ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+        on_success: *success-alert
+        on_failure: *failure-alert
 
 resource_types:
   - name: terraform
