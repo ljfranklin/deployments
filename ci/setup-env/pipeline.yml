@@ -2,80 +2,113 @@
 jobs:
   - name: update-terraform
     plan:
-      - get: deployments-src
-      - put: terraform
-        params:
-          env_name: lyle-deployments
-          terraform_source: deployments-src/terraform/
+      - do:
+        - get: deployments-src
+        - put: terraform
+          params:
+            env_name: lyle-deployments
+            terraform_source: deployments-src/terraform/
+        on_failure:
+          put: slack-alert
+          params:
+            silent: true
+            icon_emoji: ":interrobang:"
+            text: |
+              *The '$BUILD_JOB_NAME' build failed!*
+              $ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
 
   - name: update-director
     plan:
-      - aggregate:
-        - get: ssl-certs
-          trigger: true
-        - get: deployments-src
-        - get: stemcell
-        - get: bosh-release
-        - get: cpi-release
-        - get: bosh-cli
-        - get: terraform
-      - task: update-director
-        file: deployments-src/ci/setup-env/tasks/deploy-director.yml
-        output_mapping: {output-src: updated-deployments-src}
-        params:
-          BOSH_DIRECTOR_SECRETS: {{bosh_director_secrets}}
-        ensure:
-          do:
-          - task: commit-state-file
-            file: deployments-src/ci/setup-env/tasks/git-commit.yml
-            input_mapping: {input-src: updated-deployments-src}
-            output_mapping: {output-src: committed-deployments-src}
-            params:
-              GIT_ADD_ARGS: ./bosh/director-state.json
-              GIT_COMMIT_MSG: ":airplane: Auto-commit: Updating Director deployment state"
-              GIT_COMMIT_USERNAME: friendly-ci
-              GIT_COMMIT_EMAIL: {{git_commit_email}}
-              GIT_SUCCEED_ON_NO_CHANGES: true
-          - put: deployments-src
-            params:
-              repository: committed-deployments-src/
-              rebase: true
+      - do:
+        - aggregate:
+          - get: ssl-certs
+            trigger: true
+          - get: deployments-src
+          - get: stemcell
+          - get: bosh-release
+          - get: cpi-release
+          - get: bosh-cli
+            resource: bosh-cli-tmp
+          - get: terraform
+        - task: update-director
+          file: deployments-src/ci/setup-env/tasks/deploy-director.yml
+          output_mapping: {output-src: updated-deployments-src}
+          params:
+            BOSH_DIRECTOR_SECRETS: {{bosh_director_secrets}}
+          ensure:
+            do:
+            - task: commit-state-file
+              file: deployments-src/ci/setup-env/tasks/git-commit.yml
+              input_mapping: {input-src: updated-deployments-src}
+              output_mapping: {output-src: committed-deployments-src}
+              params:
+                GIT_ADD_ARGS: ./bosh/director-state.json
+                GIT_COMMIT_MSG: ":airplane: Auto-commit: Updating Director deployment state"
+                GIT_COMMIT_USERNAME: friendly-ci
+                GIT_COMMIT_EMAIL: {{git_commit_email}}
+                GIT_SUCCEED_ON_NO_CHANGES: true
+            - put: deployments-src
+              params:
+                repository: committed-deployments-src/
+                rebase: true
+        on_failure:
+          put: slack-alert
+          params:
+            silent: true
+            icon_emoji: ":interrobang:"
+            text: |
+              *The '$BUILD_JOB_NAME' build failed!*
+              $ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
 
   - name: renew-certs
     plan:
-      - aggregate:
-        - get: deployments-src
-        - get: ssl-certs
-        - get: midnight
-          trigger: true
-      - task: update-certs
-        file: deployments-src/ci/setup-env/tasks/update-certs.yml
-        input_mapping: {input-src: ssl-certs}
-        output_mapping: {output-src: updated-ssl-certs}
-        params:
-          CLOUDFLARE_EMAIL:   {{cloudflare_email}}
-          CLOUDFLARE_API_KEY: {{cloudflare_token}}
-          CLOUDFLARE_DOMAINS: {{cloudflare_domains}}
-      - task: commit-certs
-        file: deployments-src/ci/setup-env/tasks/git-commit.yml
-        input_mapping: {input-src: updated-ssl-certs}
-        output_mapping: {output-src: committed-ssl-certs}
-        params:
-          GIT_ADD_ARGS: .
-          GIT_COMMIT_MSG: ":airplane: Auto-commit: Updating SSL Certs"
-          GIT_COMMIT_USERNAME: friendly-ci
-          GIT_COMMIT_EMAIL: {{git_commit_email}}
-          GIT_SUCCEED_ON_NO_CHANGES: true
-      - put: ssl-certs
-        params:
-          repository: committed-ssl-certs/
-          rebase: true
+      - do:
+        - aggregate:
+          - get: deployments-src
+          - get: ssl-certs
+          - get: midnight
+            trigger: true
+        - task: update-certs
+          file: deployments-src/ci/setup-env/tasks/update-certs.yml
+          input_mapping: {input-src: ssl-certs}
+          output_mapping: {output-src: updated-ssl-certs}
+          params:
+            CLOUDFLARE_EMAIL:   {{cloudflare_email}}
+            CLOUDFLARE_API_KEY: {{cloudflare_token}}
+            CLOUDFLARE_DOMAINS: {{cloudflare_domains}}
+        - task: commit-certs
+          file: deployments-src/ci/setup-env/tasks/git-commit.yml
+          input_mapping: {input-src: updated-ssl-certs}
+          output_mapping: {output-src: committed-ssl-certs}
+          params:
+            GIT_ADD_ARGS: .
+            GIT_COMMIT_MSG: ":airplane: Auto-commit: Updating SSL Certs"
+            GIT_COMMIT_USERNAME: friendly-ci
+            GIT_COMMIT_EMAIL: {{git_commit_email}}
+            GIT_SUCCEED_ON_NO_CHANGES: true
+        - put: ssl-certs
+          params:
+            repository: committed-ssl-certs/
+            rebase: true
+        on_failure:
+          put: slack-alert
+          params:
+            silent: true
+            icon_emoji: ":interrobang:"
+            text: |
+              *The '$BUILD_JOB_NAME' build failed!*
+              $ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
 
 resource_types:
   - name: terraform
     type: docker-image
     source:
       repository: ljfranklin/terraform-resource
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+      tag: latest
 
 resources:
   - name: deployments-src
@@ -103,6 +136,14 @@ resources:
     type: bosh-io-release
     source:
       repository: cloudfoundry/bosh
+  - name: bosh-cli-tmp
+    type: s3
+    source:
+      bucket: lyle-gce-deployments
+      regexp: bosh-cli/bosh-cli-(0.0.64)-patched-linux-amd64
+      endpoint: https://storage.googleapis.com
+      access_key_id: {{storage_access_key}}
+      secret_access_key: {{storage_secret_key}}
   - name: bosh-cli
     type: s3
     source:
@@ -130,3 +171,7 @@ resources:
       location: US/Pacific
       start: 12:00 AM
       stop: 2:00 AM
+  - name: slack-alert
+    type: slack-notification
+    source:
+      url: {{slack_integration_url}}
