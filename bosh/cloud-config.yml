@@ -3,11 +3,6 @@ azs:
   cloud_properties: {zone: us-central1-c}
 
 vm_types:
-- name: small
-  cloud_properties:
-    machine_type: g1-small
-    root_disk_size_gb: 10
-    root_disk_type: pd-standard
 - name: concourse
   cloud_properties:
     cpu: 1
