@@ -26,18 +26,10 @@ output "concourse_external_ip" {
   value = "${google_compute_address.concourse.address}"
 }
 
-output "vault_external_ip" {
-  value = "${google_compute_address.vault.address}"
-}
-
 output "bosh_hostname" {
   value = "${cloudflare_record.bosh-dns.hostname}"
 }
 
 output "concourse_hostname" {
   value = "${cloudflare_record.concourse-dns.hostname}"
-}
-
-output "vault_hostname" {
-  value = "${cloudflare_record.vault-dns.hostname}"
 }
