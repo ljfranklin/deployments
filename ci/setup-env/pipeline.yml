@@ -20,7 +20,7 @@ shared:
       silent: true
       icon_url: "https://avatars1.githubusercontent.com/u/7809479?v=3&s=200"
       text: |
-        *A new version of Concourse is available! Run `bosh deploy` to upgrade.*
+        *A new version of Concourse is available! Run 'bosh deploy' to upgrade.*
 
 jobs:
   - name: update-terraform
@@ -85,12 +85,13 @@ jobs:
           - get: stemcell
           - get: bosh-cli
             resource: bosh-cli-tmp
+          - get: deployments-src
         - task: upload-bosh-assets
           file: deployments-src/ci/setup-env/tasks/upload-bosh-assets.yml
-          input_mapping: {assets: concourse-and-garden}
+          input_mapping: {releases: concourse-and-garden}
           params:
             BOSH_DIRECTOR_SECRETS: {{bosh_director_secrets}}
-            RELEASE_GLOBS:         "assets/concourse-*.tgz assets/garden-runc-*.tgz"
+            RELEASE_GLOBS:         "releases/concourse-*.tgz releases/garden-runc-*.tgz"
             STEMCELL_GLOB:         "stemcell/*.tgz"
         on_success: *update-assets-alert
         on_failure: *failure-alert
@@ -192,6 +193,11 @@ resources:
     source:
       bucket: bosh-cli-artifacts
       regexp: bosh-cli-(\d+\.\d+\.\d+)-linux-amd64
+  - name: concourse-and-garden
+    type: github-release
+    source:
+      repository: concourse
+      user: concourse
   - name: terraform
     type: terraform
     source:
