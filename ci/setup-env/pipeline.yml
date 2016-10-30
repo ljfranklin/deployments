@@ -47,7 +47,6 @@ jobs:
           - get: bosh-release
           - get: cpi-release
           - get: bosh-cli
-            resource: bosh-cli-tmp
           - get: terraform
             trigger: true
         - task: update-director
@@ -84,7 +83,6 @@ jobs:
               globs: ['concourse-*.tgz','garden-runc-*.tgz']
           - get: stemcell
           - get: bosh-cli
-            resource: bosh-cli-tmp
           - get: deployments-src
         - task: upload-bosh-assets
           file: deployments-src/ci/setup-env/tasks/upload-bosh-assets.yml
@@ -180,14 +178,6 @@ resources:
     type: bosh-io-release
     source:
       repository: cloudfoundry/bosh
-  - name: bosh-cli-tmp
-    type: s3
-    source:
-      bucket: lyle-gce-deployments
-      regexp: bosh-cli/bosh-cli-(0.0.64)-patched-linux-amd64
-      endpoint: https://storage.googleapis.com
-      access_key_id: {{storage_access_key}}
-      secret_access_key: {{storage_secret_key}}
   - name: bosh-cli
     type: s3
     source:
