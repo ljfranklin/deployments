@@ -130,6 +130,7 @@ jobs:
 
   - name: curl-websites
     serial_groups: [deploy]
+    build_logs_to_retain: 2000 # ~7 days
     plan:
       - do:
         - get: 5m
@@ -140,6 +141,7 @@ jobs:
           params:
             URLS_TO_CURL: {{urls_to_curl}}
         on_failure: *failure-alert
+        attempts: 5
 
 resource_types:
   - name: terraform
