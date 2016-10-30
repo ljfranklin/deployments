@@ -7,7 +7,6 @@ releases:
 - name: garden-runc
   version: latest
 
-# https://storage.googleapis.com/bosh-cpi-artifacts/light-bosh-stemcell-3262.12-google-kvm-ubuntu-trusty-go_agent.tgz
 stemcells:
 - alias: trusty
   os: ubuntu-trusty
