@@ -103,6 +103,9 @@ jobs:
         address: 127.0.0.1
         name: director-gce
         db: *db
+        flush_arp: true
+        local_dns:
+          enabled: true
         cpi_job: google_cpi
         user_management:
           provider: local
