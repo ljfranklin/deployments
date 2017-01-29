@@ -1,14 +1,14 @@
 {
     "director_id": "aef117e1-f03e-4c92-50d6-aa04e5bb41c4",
     "installation_id": "876ee69f-8823-4f85-7075-984525696a7b",
-    "current_vm_cid": "vm-9006ac49-e215-4ecc-467b-786ba3e71c85",
-    "current_stemcell_id": "50e00861-61ff-464d-7eb9-cded310c1662",
+    "current_vm_cid": "vm-70c36545-6591-4870-4222-b470bc75bd1d",
+    "current_stemcell_id": "7fd7e6bc-eda2-4a74-439a-13737f36bf14",
     "current_disk_id": "6c8a984d-b924-4cc9-653d-aa2d12c2215c",
     "current_release_ids": [
-        "abea8908-9e84-4712-64c9-c7b396df1818",
-        "8765856b-8631-4c27-4578-eff02d4833a4"
+        "1dbb1deb-bfd8-4473-55f2-2c9b7344acf2",
+        "91e51fdc-8d01-48ed-6a97-e6f8edf2431b"
     ],
-    "current_manifest_sha": "ee9453a9d8858c9fc992a3608f14bca756655ffb236c16c273396b98bb7ba3f32590c243a92e711c0392c8727deaad3906d2b9dc5097349e9d0de7ea14f57d1d",
+    "current_manifest_sha": "f7aac0152c66a24c0b40478d9cc1e6af072ce8389d8c487ecef9ade382bdda48408188c949b583e2bea917da3edd4edf8b8637e2ff6aa8242554dae9410434bf",
     "disks": [
         {
             "id": "6c8a984d-b924-4cc9-653d-aa2d12c2215c",
@@ -21,22 +21,22 @@
     ],
     "stemcells": [
         {
-            "id": "50e00861-61ff-464d-7eb9-cded310c1662",
+            "id": "7fd7e6bc-eda2-4a74-439a-13737f36bf14",
             "name": "bosh-google-kvm-ubuntu-trusty-go_agent",
-            "version": "3312.5",
-            "cid": "stemcell-b011c3e1-7b65-4f71-4163-9a1be6151c79"
+            "version": "3312.15",
+            "cid": "stemcell-a6eb5fb7-660d-4668-4f65-2ffc956450de"
         }
     ],
     "releases": [
         {
-            "id": "abea8908-9e84-4712-64c9-c7b396df1818",
+            "id": "1dbb1deb-bfd8-4473-55f2-2c9b7344acf2",
             "name": "bosh",
-            "version": "260"
+            "version": "260.5"
         },
         {
-            "id": "8765856b-8631-4c27-4578-eff02d4833a4",
+            "id": "91e51fdc-8d01-48ed-6a97-e6f8edf2431b",
             "name": "bosh-google-cpi",
-            "version": "25.6.1"
+            "version": "25.6.2"
         }
     ]
 }
