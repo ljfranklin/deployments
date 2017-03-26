@@ -45,6 +45,7 @@ jobs:
           - get: deployments-src
           - get: stemcell
           - get: bosh-release
+          - get: os-conf-release
           - get: cpi-release
           - get: bosh-cli
           - get: terraform
@@ -180,6 +181,10 @@ resources:
     type: bosh-io-release
     source:
       repository: cloudfoundry/bosh
+  - name: os-conf-release
+    type: bosh-io-release
+    source:
+      repository: cloudfoundry/os-conf-release
   - name: bosh-cli
     type: s3
     source:

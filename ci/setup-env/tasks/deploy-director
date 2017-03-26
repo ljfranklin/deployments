@@ -18,6 +18,7 @@ secrets_json="$(yaml_to_json "${BOSH_DIRECTOR_SECRETS}")"
 terraform_config="$( cd "${workspace_dir}/terraform" && pwd )"
 cpi_dir="$( cd "${workspace_dir}/cpi-release" && pwd )"
 bosh_dir="$( cd "${workspace_dir}/bosh-release" && pwd )"
+os_conf_dir="$( cd "${workspace_dir}/os-conf-release" && pwd )"
 stemcell_dir="$( cd "${workspace_dir}/stemcell" && pwd )"
 ssl_certs_dir="$( cd "${workspace_dir}/ssl-certs" && pwd )"
 bosh_cli=$( echo ${workspace_dir}/bosh-cli/bosh-cli-* )
@@ -32,6 +33,7 @@ working_dir="$( cd "${output_dir}/bosh/" && pwd )"
 mkdir -p "${working_dir}/assets/"
 cp ${cpi_dir}/*.tgz "${working_dir}/assets/cpi.tgz"
 cp ${bosh_dir}/*.tgz "${working_dir}/assets/bosh.tgz"
+cp ${os_conf_dir}/*.tgz "${working_dir}/assets/os-conf.tgz"
 cp ${stemcell_dir}/*.tgz "${working_dir}/assets/stemcell.tgz"
 
 pushd "${working_dir}" > /dev/null

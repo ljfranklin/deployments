@@ -6,6 +6,8 @@ releases:
     url: file://assets/bosh.tgz
   - name: bosh-google-cpi
     url: file://assets/cpi.tgz
+  - name: os-conf
+    url: file://assets/os-conf.tgz
 
 resource_pools:
   - name: vms
@@ -61,6 +63,8 @@ jobs:
         release: bosh
       - name: google_cpi
         release: bosh-google-cpi
+      - name: user_add
+        release: os-conf
 
     resource_pool: vms
     persistent_disk_pool: disks
@@ -75,6 +79,10 @@ jobs:
         static_ips: [((bosh_external_ip))]
 
     properties:
+      users:
+      - name: gw
+        public_key: ((bosh_gw_public_key))
+
       nats:
         address: 127.0.0.1
         user: nats
@@ -118,6 +126,10 @@ jobs:
         ssl:
           cert: ((ssl_cert))
           key: ((ssl_key))
+        default_ssh_options:
+          gateway_host: ((bosh_external_ip))
+          gateway_user: gw
+
       hm:
         director_account:
           user: hm

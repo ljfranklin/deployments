@@ -11,6 +11,7 @@ inputs:
   - name: deployments-src
   - name: bosh-release
   - name: cpi-release
+  - name: os-conf-release
   - name: stemcell
   - name: bosh-cli
   - name: ssl-certs
