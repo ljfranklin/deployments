@@ -45,6 +45,7 @@ jobs:
           - get: deployments-src
           - get: bosh-cli
           - get: director-vars-store
+          - get: bosh-deployment
           - get: terraform
             trigger: true
         - task: update-director
@@ -151,6 +152,10 @@ resources:
       uri: git@github.com:ljfranklin/ssl_certs.git
       private_key: {{ssl_certs_github_deploy_key}}
       branch: master
+  - name: bosh-deployment
+    type: git
+    source:
+      uri: https://github.com/cloudfoundry/bosh-deployment.git
   - name: bosh-cli
     type: s3
     source:
