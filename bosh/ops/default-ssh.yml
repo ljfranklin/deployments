@@ -1,0 +1,6 @@
+---
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/default_ssh_options?
+  value:
+    gateway_host: ((external_ip))
+    gateway_user: jumpbox

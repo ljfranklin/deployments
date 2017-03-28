@@ -1,0 +1,15 @@
+---
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/ssl?
+  value:
+    cert: ((ssl_cert))
+    key: ((ssl_key))
+
+- type: remove
+  path: /instance_groups/name=bosh/properties/hm/director_account/ca_cert?
+
+- type: remove
+  path: /variables/name=default_ca?
+
+- type: remove
+  path: /variables/name=director_ssl?

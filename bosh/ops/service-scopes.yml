@@ -1,0 +1,6 @@
+---
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties/service_scopes?
+  value:
+    - compute
+    - devstorage.full_control

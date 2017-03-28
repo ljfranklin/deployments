@@ -43,18 +43,15 @@ jobs:
           - get: ssl-certs
             trigger: true
           - get: deployments-src
-          - get: stemcell
-          - get: bosh-release
-          - get: os-conf-release
-          - get: cpi-release
           - get: bosh-cli
+          - get: director-vars-store
           - get: terraform
             trigger: true
         - task: update-director
           file: deployments-src/ci/setup-env/tasks/deploy-director.yml
           output_mapping: {output-src: updated-deployments-src}
           params:
-            BOSH_DIRECTOR_SECRETS: {{bosh_director_secrets}}
+            GCP_CREDENTIALS_JSON: {{gce_credentials_json}}
           ensure:
             do:
             - task: commit-state-file
@@ -71,28 +68,10 @@ jobs:
               params:
                 repository: committed-deployments-src/
                 rebase: true
+            - put: director-vars-store
+              params:
+                file: updated-director-vars-store/vars-store.yml
         on_success: *success-alert
-        on_failure: *failure-alert
-
-  - name: upload-concourse-assets
-    plan:
-      - do:
-        - aggregate:
-          - get: concourse-and-garden
-            trigger: true
-            params:
-              globs: ['concourse-*.tgz','garden-runc-*.tgz']
-          - get: stemcell
-          - get: bosh-cli
-          - get: deployments-src
-        - task: upload-bosh-assets
-          file: deployments-src/ci/setup-env/tasks/upload-bosh-assets.yml
-          input_mapping: {releases: concourse-and-garden}
-          params:
-            BOSH_DIRECTOR_SECRETS: {{bosh_director_secrets}}
-            RELEASE_GLOBS:         "releases/concourse-*.tgz releases/garden-runc-*.tgz"
-            STEMCELL_GLOB:         "stemcell/*.tgz"
-        on_success: *update-assets-alert
         on_failure: *failure-alert
 
   - name: renew-certs
@@ -154,6 +133,10 @@ resource_types:
     source:
       repository: cfcommunity/slack-notification-resource
       tag: latest
+  - name: gcs
+    type: docker-image
+    source:
+      repository: frodenas/gcs-resource
 
 resources:
   - name: deployments-src
@@ -168,33 +151,11 @@ resources:
       uri: git@github.com:ljfranklin/ssl_certs.git
       private_key: {{ssl_certs_github_deploy_key}}
       branch: master
-  - name: stemcell
-    type: s3
-    source:
-      bucket: bosh-gce-light-stemcells
-      regexp: light-bosh-stemcell-([0-9\.]+)-google-kvm-ubuntu-trusty-go_agent.tgz
-  - name: cpi-release
-    type: bosh-io-release
-    source:
-      repository: cloudfoundry-incubator/bosh-google-cpi-release
-  - name: bosh-release
-    type: bosh-io-release
-    source:
-      repository: cloudfoundry/bosh
-  - name: os-conf-release
-    type: bosh-io-release
-    source:
-      repository: cloudfoundry/os-conf-release
   - name: bosh-cli
     type: s3
     source:
       bucket: bosh-cli-artifacts
       regexp: bosh-cli-(\d+\.\d+\.\d+)-linux-amd64
-  - name: concourse-and-garden
-    type: github-release
-    source:
-      repository: concourse
-      user: concourse
   - name: terraform
     type: terraform
     source:
@@ -211,6 +172,12 @@ resources:
         cloudflare_email: {{cloudflare_email}}
         cloudflare_token: {{cloudflare_token}}
         cloudflare_domain: {{cloudflare_root_domain}}
+  - name: director-vars-store
+    type: gcs
+    source:
+      bucket: {{deployments_bucket_name}}
+      json_key: {{gce_credentials_json}}
+      versioned_file: director/vars-store.yml
   - name: 5m
     type: time
     source:

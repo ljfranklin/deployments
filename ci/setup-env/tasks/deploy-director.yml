@@ -9,18 +9,17 @@ image_resource:
 inputs:
   - name: terraform
   - name: deployments-src
-  - name: bosh-release
-  - name: cpi-release
-  - name: os-conf-release
-  - name: stemcell
   - name: bosh-cli
   - name: ssl-certs
+  - name: bosh-deployment
+  - name: director-vars-store
 
 outputs:
   - name: output-src
+  - name: updated-director-vars-store
 
 params:
-  BOSH_DIRECTOR_SECRETS: ""
+  GCP_CREDENTIALS_JSON: ""
 
 run:
   path: deployments-src/ci/setup-env/tasks/deploy-director

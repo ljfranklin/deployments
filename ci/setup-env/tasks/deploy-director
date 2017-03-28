@@ -6,49 +6,47 @@ deployments_dir="$( cd "$( dirname "$0" )" && cd ../../.. && pwd )"
 workspace_dir="$( cd "${deployments_dir}/.." && pwd )"
 
 # env
-: ${BOSH_DIRECTOR_SECRETS:?}
-
-yaml_to_json() {
-  echo "$1" | ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load(ARGF))'
-}
-
-secrets_json="$(yaml_to_json "${BOSH_DIRECTOR_SECRETS}")"
+: ${GCP_CREDENTIALS_JSON:?}
 
 # inputs
 terraform_config="$( cd "${workspace_dir}/terraform" && pwd )"
-cpi_dir="$( cd "${workspace_dir}/cpi-release" && pwd )"
-bosh_dir="$( cd "${workspace_dir}/bosh-release" && pwd )"
-os_conf_dir="$( cd "${workspace_dir}/os-conf-release" && pwd )"
-stemcell_dir="$( cd "${workspace_dir}/stemcell" && pwd )"
 ssl_certs_dir="$( cd "${workspace_dir}/ssl-certs" && pwd )"
+bosh_deployment_dir="$( cd "${workspace_dir}/bosh-deployment" && pwd )"
+input_vars_store="$( cd "${workspace_dir}/director-vars-store" && pwd )"
 bosh_cli=$( echo ${workspace_dir}/bosh-cli/bosh-cli-* )
 chmod +x "${bosh_cli}"
 
 # outputs
+output_vars_store="$( cd "${workspace_dir}/updated-director-vars-store" && pwd )"
 output_dir="$( cd "${workspace_dir}/output-src" && pwd )"
 
 git clone "${deployments_dir}" "${output_dir}"
+cp "${input_vars_store}/vars-store.yml" "${output_vars_store}"
 
 working_dir="$( cd "${output_dir}/bosh/" && pwd )"
-mkdir -p "${working_dir}/assets/"
-cp ${cpi_dir}/*.tgz "${working_dir}/assets/cpi.tgz"
-cp ${bosh_dir}/*.tgz "${working_dir}/assets/bosh.tgz"
-cp ${os_conf_dir}/*.tgz "${working_dir}/assets/os-conf.tgz"
-cp ${stemcell_dir}/*.tgz "${working_dir}/assets/stemcell.tgz"
 
 pushd "${working_dir}" > /dev/null
   echo "Updating director..."
   ${bosh_cli} -n create-env \
-    -l <(echo "${BOSH_DIRECTOR_SECRETS}") \
+    --vars-store "${output_vars_store}/vars-store.yml" \
+    -o "${bosh_deployment_dir}/gcp/cpi.yml" \
+    -o "${bosh_deployment_dir}/external-ip-not-recommended.yml" \
+    -o "${bosh_deployment_dir}/jumpbox-user.yml" \
+    -o "${bosh_deployment_dir}/local-dns.yml" \
+    -o ./ops/ssl-cert.yml \
+    -o ./ops/default-ssh.yml \
+    -o ./ops/service-scopes.yml \
     -l "${terraform_config}/metadata" \
     --var-file ssl_cert="$( echo ${ssl_certs_dir}/certificates/*.crt )" \
     --var-file ssl_key="$( echo ${ssl_certs_dir}/certificates/*.key )" \
-    ./director.yml
+		-v director_name=bosh \
+		-v gcp_credentials_json="${GCP_CREDENTIALS_JSON}" \
+    "${bosh_deployment_dir}/bosh.yml"
 
   echo "Updating cloud config..."
   export BOSH_ENVIRONMENT="$( jq -e -r .bosh_hostname "${terraform_config}/metadata" )"
-  export BOSH_CLIENT="$( echo "${secrets_json}" | jq -e -r .director_admin_username )"
-  export BOSH_CLIENT_SECRET="$( echo "${secrets_json}" | jq -e -r .director_admin_password )"
+  export BOSH_CLIENT="admin"
+  export BOSH_CLIENT_SECRET="$( ${bosh_cli} --path /admin_password "${vars_store}" )"
   ${bosh_cli} -n update-cloud-config ./cloud-config.yml
 popd > /dev/null
 
