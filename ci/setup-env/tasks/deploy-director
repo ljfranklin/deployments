@@ -37,6 +37,7 @@ pushd "${working_dir}" > /dev/null
     -o ./ops/ssl-cert.yml \
     -o ./ops/default-ssh.yml \
     -o ./ops/service-scopes.yml \
+    -o ./ops/temporary-bosh-version.yml \
     -l "${terraform_config}/metadata" \
     --var-file ssl_cert="$( echo ${ssl_certs_dir}/certificates/*.crt )" \
     --var-file ssl_key="$( echo ${ssl_certs_dir}/certificates/*.key )" \
