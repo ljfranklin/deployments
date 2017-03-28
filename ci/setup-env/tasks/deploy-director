@@ -48,7 +48,7 @@ pushd "${working_dir}" > /dev/null
   echo "Updating cloud config..."
   export BOSH_ENVIRONMENT="$( jq -e -r .bosh_hostname "${terraform_config}/metadata" )"
   export BOSH_CLIENT="admin"
-  export BOSH_CLIENT_SECRET="$( ${bosh_cli} --path /admin_password "${vars_store}" )"
+  export BOSH_CLIENT_SECRET="$( ${bosh_cli} interpolate --path /admin_password "${vars_store}" )"
   ${bosh_cli} -n update-cloud-config ./cloud-config.yml
 popd > /dev/null
 
