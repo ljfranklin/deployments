@@ -19,7 +19,7 @@ output "subnetwork" {
 }
 
 output "internal_ip" {
-  value = "${google_compute_address.director.address}"
+  value = "${cidrhost(google_compute_subnetwork.bosh.ip_cidr_range, 6)}"
 }
 
 output "internal_cidr" {
