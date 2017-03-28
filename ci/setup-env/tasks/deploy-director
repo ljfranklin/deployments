@@ -40,7 +40,7 @@ pushd "${working_dir}" > /dev/null
     --var-file ssl_cert="$( echo ${ssl_certs_dir}/certificates/*.crt )" \
     --var-file ssl_key="$( echo ${ssl_certs_dir}/certificates/*.key )" \
 		-v director_name=bosh \
-		-v gcp_credentials_json="${GCP_CREDENTIALS_JSON}" \
+		-v gcp_credentials_json="\"${GCP_CREDENTIALS_JSON}\"" \
     "${bosh_deployment_dir}/bosh.yml"
 
   echo "Updating cloud config..."
