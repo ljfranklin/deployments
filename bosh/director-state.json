@@ -1,16 +1,16 @@
 {
     "director_id": "aef117e1-f03e-4c92-50d6-aa04e5bb41c4",
     "installation_id": "876ee69f-8823-4f85-7075-984525696a7b",
-    "current_vm_cid": "vm-a72c86b1-cf7d-4052-51ca-3ff7dbd7f946",
+    "current_vm_cid": "vm-8b94b6a5-7366-406e-561c-50548480b59d",
     "current_stemcell_id": "1ba9d7db-5df4-46c2-4fe6-b364c7349c03",
     "current_disk_id": "4af7dab6-2649-4cc5-6c3e-84ca4e591c30",
     "current_release_ids": [
-        "cc93d64b-385a-46c6-66f9-33338c74bf7f",
-        "958b3084-8698-430a-5221-736e515500a6",
-        "80d10664-ccbc-4195-6d96-88e72b7a7362",
-        "85a15aac-3957-4993-66ac-25e81e9bf99d"
+        "22268fe2-756a-4a03-77e6-fad027e0a92d",
+        "5457b9d8-93a2-4f48-5fe5-a98a7bf71c89",
+        "cc2b2749-734b-49fa-5a9c-7a72e2a15f53",
+        "877922a6-908c-43db-5e25-6ce49d652b6e"
     ],
-    "current_manifest_sha": "2de7557896fc31d57c8ac1ee4b894816123035134a81b76b1c1ad3cde3b5926f81ca3916caa767cc09e7d71893b4cd9c583cc663afd5599403026a6d6780c4c7",
+    "current_manifest_sha": "dcbf7eb1c2418b58a56a0f26e16ff85bdd833871389a60af3db8725a71273605ba9f4dbe5c28ac49a36881e1603a7431c0caefb267657fe4d6cbbba7c0957739",
     "disks": [
         {
             "id": "4af7dab6-2649-4cc5-6c3e-84ca4e591c30",
@@ -31,24 +31,24 @@
     ],
     "releases": [
         {
-            "id": "cc93d64b-385a-46c6-66f9-33338c74bf7f",
+            "id": "22268fe2-756a-4a03-77e6-fad027e0a92d",
             "name": "bosh",
             "version": "261.4"
         },
         {
-            "id": "958b3084-8698-430a-5221-736e515500a6",
+            "id": "5457b9d8-93a2-4f48-5fe5-a98a7bf71c89",
             "name": "bosh-google-cpi",
             "version": "25.6.2"
         },
         {
-            "id": "80d10664-ccbc-4195-6d96-88e72b7a7362",
+            "id": "cc2b2749-734b-49fa-5a9c-7a72e2a15f53",
             "name": "os-conf",
             "version": "11"
         },
         {
-            "id": "85a15aac-3957-4993-66ac-25e81e9bf99d",
+            "id": "877922a6-908c-43db-5e25-6ce49d652b6e",
             "name": "bosh-bot",
-            "version": "0.0.6-rc.5"
+            "version": "0.0.7-rc.3"
         }
     ]
 }
