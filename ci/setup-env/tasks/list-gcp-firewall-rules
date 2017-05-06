@@ -1,23 +1,17 @@
 #!/bin/bash
 
-set -eu
+set -eu -o pipefail
 
 deployments_dir="$( cd "$( dirname "$0" )" && cd ../../.. && pwd )"
 workspace_dir="$( cd "${deployments_dir}/.." && pwd )"
 
 # ENV
 : "${GCP_CREDENTIALS_JSON}"
-: "${GCP_PROJECT_ID}"
 
 # OUTPUTS
 output_dir="${workspace_dir}/gcp-firewall-rules"
 
-tmpdir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename 0).XXXXXXXXXXXX")
-trap '{ rm -rf "${tmpdir}"; }' EXIT
-
-export CLOUDSDK_CORE_PROJECT="${GCP_PROJECT_ID}"
-export GOOGLE_APPLICATION_CREDENTIALS="${tmpdir}/gcp-creds.json"
-echo "${GCP_CREDENTIALS_JSON}" > "${GOOGLE_APPLICATION_CREDENTIALS}"
+gcloud auth activate-service-account --key-file=<( echo "${GCP_CREDENTIALS_JSON}" )
 
 # example format:
 # {

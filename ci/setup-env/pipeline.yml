@@ -34,7 +34,6 @@ jobs:
           file: deployments-src/ci/setup-env/tasks/list-gcp-firewall-rules.yml
           params:
             GCP_CREDENTIALS_JSON: {{gce_credentials_json}}
-            GCP_PROJECT_ID: {{gce_project_id}}
         - put: terraform
           params:
             env_name: lyle-deployments

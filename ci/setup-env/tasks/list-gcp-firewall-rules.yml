@@ -14,7 +14,6 @@ outputs:
 
 params:
   GCP_CREDENTIALS_JSON: ""
-  GCP_PROJECT_ID: ""
 
 run:
   path: deployments-src/ci/setup-env/tasks/list-gcp-firewall-rules
