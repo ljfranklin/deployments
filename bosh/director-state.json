@@ -1,16 +1,16 @@
 {
     "director_id": "aef117e1-f03e-4c92-50d6-aa04e5bb41c4",
     "installation_id": "876ee69f-8823-4f85-7075-984525696a7b",
-    "current_vm_cid": "vm-8b94b6a5-7366-406e-561c-50548480b59d",
-    "current_stemcell_id": "1ba9d7db-5df4-46c2-4fe6-b364c7349c03",
+    "current_vm_cid": "vm-9fee3eac-0287-4d1a-54a8-0f7c3ce8d07e",
+    "current_stemcell_id": "493044ff-8b90-4d2c-7569-60aa54c75cf8",
     "current_disk_id": "4af7dab6-2649-4cc5-6c3e-84ca4e591c30",
     "current_release_ids": [
-        "22268fe2-756a-4a03-77e6-fad027e0a92d",
-        "5457b9d8-93a2-4f48-5fe5-a98a7bf71c89",
-        "cc2b2749-734b-49fa-5a9c-7a72e2a15f53",
-        "877922a6-908c-43db-5e25-6ce49d652b6e"
+        "63584b6a-d9af-4f50-6345-f83fecfecc3b",
+        "a2ea0bbc-adc8-4c09-4d8f-e076e39d3153",
+        "2058b9e0-73d2-4ad2-7f57-7c487cc0eb8a",
+        "30a1063d-9f26-4eff-6bb4-5cd2829d77ce"
     ],
-    "current_manifest_sha": "dcbf7eb1c2418b58a56a0f26e16ff85bdd833871389a60af3db8725a71273605ba9f4dbe5c28ac49a36881e1603a7431c0caefb267657fe4d6cbbba7c0957739",
+    "current_manifest_sha": "9ebab0783ace020c7241f27ff7b5ee274f0d4a756bd779c11fa7c591d4f406bd2557e41cd37409f3409b2a666c40ab86bce4bbe9dff8e7c7c5b00426e5b8eb5a",
     "disks": [
         {
             "id": "4af7dab6-2649-4cc5-6c3e-84ca4e591c30",
@@ -23,30 +23,30 @@
     ],
     "stemcells": [
         {
-            "id": "1ba9d7db-5df4-46c2-4fe6-b364c7349c03",
+            "id": "493044ff-8b90-4d2c-7569-60aa54c75cf8",
             "name": "bosh-google-kvm-ubuntu-trusty-go_agent",
-            "version": "3312.15",
-            "cid": "stemcell-76ac1398-5ff3-48dc-7651-3d917d879eb5"
+            "version": "3363.20",
+            "cid": "stemcell-2346e41b-f32a-4210-489d-4f63e50452c5"
         }
     ],
     "releases": [
         {
-            "id": "22268fe2-756a-4a03-77e6-fad027e0a92d",
+            "id": "63584b6a-d9af-4f50-6345-f83fecfecc3b",
             "name": "bosh",
             "version": "261.4"
         },
         {
-            "id": "5457b9d8-93a2-4f48-5fe5-a98a7bf71c89",
+            "id": "a2ea0bbc-adc8-4c09-4d8f-e076e39d3153",
             "name": "bosh-google-cpi",
             "version": "25.6.2"
         },
         {
-            "id": "cc2b2749-734b-49fa-5a9c-7a72e2a15f53",
+            "id": "2058b9e0-73d2-4ad2-7f57-7c487cc0eb8a",
             "name": "os-conf",
             "version": "11"
         },
         {
-            "id": "877922a6-908c-43db-5e25-6ce49d652b6e",
+            "id": "30a1063d-9f26-4eff-6bb4-5cd2829d77ce",
             "name": "bosh-bot",
             "version": "0.0.7-rc.3"
         }
