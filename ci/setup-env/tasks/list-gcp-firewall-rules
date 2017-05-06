@@ -19,7 +19,7 @@ gcloud auth activate-service-account --key-file=<( echo "${GCP_CREDENTIALS_JSON}
 #   "google_compute_firewall.allow-bosh": "allow-bosh"
 # }
 gcloud compute firewall-rules list --format json --filter network=bosh | \
-  jq -r -s '.[] | map({ key: ("google_compute_firewallasdf." + .name), value: .name }) | from_entries' \
+  jq -r -s '.[] | map({ key: ("google_compute_firewall." + .name), value: .name }) | from_entries' \
   > "${output_dir}/firewall-rules.json"
 
 echo "Found the following rules:"
