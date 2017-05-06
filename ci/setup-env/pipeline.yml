@@ -41,7 +41,6 @@ jobs:
             # will delete extra firewall rules that were added out-of-band
             import_files:
               - gcp-firewall-rules/firewall-rules.json
-        on_success: *success-alert
         on_failure: *failure-alert
 
   - name: update-director
