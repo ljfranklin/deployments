@@ -57,7 +57,6 @@ jobs:
           - get: bosh-deployment
           - get: bosh-bot
           - get: terraform
-            trigger: true
         - task: update-director
           file: deployments-src/ci/setup-env/tasks/deploy-director.yml
           output_mapping: {output-src: updated-deployments-src}
