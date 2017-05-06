@@ -22,3 +22,5 @@ gcloud compute firewall-rules list --format json | \
   jq -r -s '.[] | map({ key: ("google_compute_firewall." + .name), value: .name }) | from_entries' \
   > "${output_dir}/firewall-rules.json"
 
+echo "Found the following rules:"
+cat "${output_dir}/firewall-rules.json"
