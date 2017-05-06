@@ -3,6 +3,8 @@ FROM alpine:latest
 RUN apk update && \
     apk --no-cache add \
     ca-certificates wget bash git jq xz \
+    # needed by gcloud
+    python \
     # needed to render bosh templates
     ruby ruby-dev \
     # needed to run Google CPI packaging scripts
@@ -20,3 +22,10 @@ RUN wget -q -O /tmp/lego.tar.xz https://github.com/xenolf/lego/releases/download
   tar xf /tmp/lego.tar.xz -C /usr/local/bin/ --strip 1 -- lego/lego && \
   chmod +x /usr/local/bin/lego && \
   rm /tmp/lego.tar.xz
+
+RUN wget -O /tmp/google-sdk.tgz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-152.0.0-linux-x86_64.tar.gz && \
+  tar xvf /tmp/google-sdk.tgz -C $HOME && \
+  rm /tmp/google-sdk.tgz
+
+RUN ln -s $HOME/google-cloud-sdk/bin/gcloud /usr/local/bin/
+RUN ln -s $HOME/google-cloud-sdk/bin/gsutil /usr/local/bin/

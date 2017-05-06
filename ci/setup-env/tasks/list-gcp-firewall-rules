@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -eu
+
+deployments_dir="$( cd "$( dirname "$0" )" && cd ../../.. && pwd )"
+workspace_dir="$( cd "${deployments_dir}/.." && pwd )"
+
+# ENV
+: "${GCP_CREDENTIALS_JSON}"
+: "${GCP_PROJECT_ID}"
+
+# OUTPUTS
+output_dir="${workspace_dir}/gcp-firewall-rules"
+
+tmpdir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename 0).XXXXXXXXXXXX")
+trap '{ rm -rf "${tmpdir}"; }' EXIT
+
+export CLOUDSDK_CORE_PROJECT="${GCP_PROJECT_ID}"
+export GOOGLE_APPLICATION_CREDENTIALS="${tmpdir}/gcp-creds.json"
+echo "${GCP_CREDENTIALS_JSON}" > "${GOOGLE_APPLICATION_CREDENTIALS}"
+
+# example format:
+# {
+#   "google_compute_firewall.allow-ssh": "allow-ssh",
+#   "google_compute_firewall.allow-bosh": "allow-bosh"
+# }
+gcloud compute firewall-rules list --format json | \
+  jq -r -s '.[] | map({ key: ("google_compute_firewall." + .name), value: .name }) | from_entries' \
+  > "${output_dir}/firewall-rules.json"
+

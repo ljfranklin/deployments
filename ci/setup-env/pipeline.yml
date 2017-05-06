@@ -27,11 +27,21 @@ jobs:
     serial_groups: [deploy]
     plan:
       - do:
+        - get: 1h
+          trigger: true
         - get: deployments-src
+        - task: list-gcp-firewall-rules
+          file: deployments-src/ci/setup-env/tasks/list-gcp-firewall-rules.yml
+          params:
+            GCP_CREDENTIALS_JSON: {{gce_credentials_json}}
+            GCP_PROJECT_ID: {{gce_project_id}}
         - put: terraform
           params:
             env_name: lyle-deployments
             terraform_source: deployments-src/terraform/
+            # will delete extra firewall rules that were added out-of-band
+            import_files:
+              - gcp-firewall-rules/firewall-rules.json
         on_success: *success-alert
         on_failure: *failure-alert
 
@@ -193,6 +203,10 @@ resources:
     type: time
     source:
       interval: 5m
+  - name: 1h
+    type: time
+    source:
+      interval: 1h
   - name: sunday-night
     type: time
     source:
