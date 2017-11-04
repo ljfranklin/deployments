@@ -3,8 +3,7 @@ name: concourse
 
 releases:
 - name: concourse
-  # version: latest
-  version: 3.5.0
+  version: latest
 - name: garden-runc
   version: latest
 - name: postgres
