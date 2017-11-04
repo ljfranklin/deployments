@@ -7,6 +7,8 @@ releases:
   version: 3.5.0
 - name: garden-runc
   version: latest
+- name: postgres
+  version: latest
 
 stemcells:
 - alias: trusty
@@ -34,7 +36,11 @@ instance_groups:
         tls_bind_port: 443
         tls_cert: ((concourse_ssl_cert))
         tls_key: ((concourse_ssl_key))
-        postgresql_database: &atc_db atc
+        postgresql:
+          database: atc
+          role:
+            name: atc
+            password: ((concourse_db_password))
         github_auth:
           client_id: ((github_client_id))
           client_secret: ((github_client_secret))
@@ -43,13 +49,16 @@ instance_groups:
     - name: tsa
       release: concourse
       properties: {}
-    - name: postgresql
-      release: concourse
+    - name: postgres
+      release: postgres
       properties:
         databases:
-        - name: *atc_db
-          role: atc
-          password: ((concourse_db_password))
+          port: 5432
+          databases:
+          - name: atc
+          roles:
+          - name: atc
+            password: ((concourse_db_password))
     - name: groundcrew
       release: concourse
       properties:
