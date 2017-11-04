@@ -35,7 +35,6 @@ jobs:
           - get: director-vars-store
           - get: bosh-deployment
           - get: bosh-bot
-          - get: terraform
         - put: terraform
           params:
             env_name: lyle-deployments
