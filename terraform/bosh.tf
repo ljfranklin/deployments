@@ -11,6 +11,7 @@ provider "cloudflare" {
 
 resource "google_compute_network" "bosh" {
   name = "bosh"
+  auto_create_subnetworks = false
 }
 
 // Subnet for the BOSH director
