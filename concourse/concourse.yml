@@ -3,7 +3,8 @@ name: concourse
 
 releases:
 - name: concourse
-  version: latest
+  # version: latest
+  version: 3.5.0
 - name: garden-runc
   version: latest
 
