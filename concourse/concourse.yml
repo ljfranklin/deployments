@@ -35,6 +35,7 @@ instance_groups:
         tls_bind_port: 443
         tls_cert: ((concourse_ssl_cert))
         tls_key: ((concourse_ssl_key))
+        token_signing_key: ((token_signing_key))
         postgresql:
           database: atc
           role:
@@ -47,7 +48,10 @@ instance_groups:
             - user: ((github_username))
     - name: tsa
       release: concourse
-      properties: {}
+      properties:
+        host_key: ((tsa_host_key))
+        token_signing_key: ((token_signing_key))
+        authorized_keys: [((worker_key.public_key))]
     - name: postgres
       release: postgres
       properties:
@@ -61,8 +65,10 @@ instance_groups:
     - name: groundcrew
       release: concourse
       properties:
+        drain_timeout: 10m
         tsa:
           host: 127.0.0.1
+          worker_key: ((worker_key))
     - name: baggageclaim
       release: concourse
       properties: {}
@@ -83,3 +89,9 @@ update:
 variables:
   - name: concourse_db_password
     type: password
+  - name: token_signing_key
+    type: rsa
+  - name: tsa_host_key
+    type: ssh
+  - name: worker_key
+    type: ssh
