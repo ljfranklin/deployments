@@ -12,7 +12,9 @@ releases:
 stemcells:
 - alias: trusty
   os: ubuntu-trusty
-  version: latest
+  # TODO: change this back to latest after this is resolved:
+  # https://github.com/concourse/concourse-deployment/issues/46
+  version: 3468.26
 
 instance_groups:
 - name: concourse
