@@ -64,7 +64,7 @@ instance_groups:
           roles:
           - name: atc
             password: ((concourse_db_password))
-    - name: groundcrew
+    - name: worker
       release: concourse
       properties:
         drain_timeout: 10m
