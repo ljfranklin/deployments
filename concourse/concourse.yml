@@ -68,7 +68,12 @@ instance_groups:
       release: concourse
       properties:
         drain_timeout: 10m
+        baggageclaim:
+          url: http://127.0.0.1:7788
         tsa:
+          host: 127.0.0.1
+          port: 2222
+          host_public_key: ((tsa_host_key.public_key))
           worker_key: ((worker_key))
     - name: baggageclaim
       release: concourse
