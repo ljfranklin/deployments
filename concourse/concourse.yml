@@ -5,17 +5,14 @@ releases:
 - name: concourse
   version: latest
 - name: garden-runc
-  # version: latest
-  version: 1.12.1
+  version: latest
 - name: postgres
   version: latest
 
 stemcells:
 - alias: trusty
   os: ubuntu-trusty
-  # TODO: change this back to latest after this is resolved:
-  # https://github.com/concourse/concourse-deployment/issues/46
-  version: 3468.26
+  version: latest
 
 instance_groups:
 - name: concourse
