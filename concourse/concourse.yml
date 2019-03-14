@@ -4,21 +4,21 @@ name: concourse
 releases:
 - name: concourse
   version: latest
-- name: garden-runc
-  version: latest
 - name: postgres
+  version: latest
+- name: bpm
   version: latest
 
 stemcells:
-- alias: trusty
-  os: ubuntu-trusty
+- alias: xenial
+  os: ubuntu-xenial
   version: latest
 
 instance_groups:
 - name: concourse
   instances: 1
   vm_type: concourse
-  stemcell: trusty
+  stemcell: xenial
   azs: [z1]
   persistent_disk_type: 10GB
   networks:
@@ -27,7 +27,10 @@ instance_groups:
     - name: floating
       static_ips: [((concourse_floating_ip))]
   jobs:
-    - name: atc
+    - release: bpm
+      name: bpm
+      properties: {}
+    - name: web
       release: concourse
       properties:
         external_url: ((concourse_url))
@@ -49,12 +52,10 @@ instance_groups:
             github:
               users:
               - ((github_username))
-    - name: tsa
-      release: concourse
-      properties:
-        host_key: ((tsa_host_key))
         token_signing_key: ((token_signing_key))
-        authorized_keys: [((worker_key.public_key))]
+        worker_gateway:
+          host_key: ((tsa_host_key))
+          authorized_keys: [((worker_key.public_key))]
     - name: postgres
       release: postgres
       properties:
@@ -69,22 +70,9 @@ instance_groups:
       release: concourse
       properties:
         drain_timeout: 10m
-        baggageclaim:
-          url: http://127.0.0.1:7788
-        tsa:
-          host: 127.0.0.1
-          port: 2222
+        worker_gateway:
           host_public_key: ((tsa_host_key.public_key))
           worker_key: ((worker_key))
-    - name: baggageclaim
-      release: concourse
-      properties: {}
-    - name: garden
-      release: garden-runc
-      properties:
-        garden:
-          listen_network: tcp
-          listen_address: 0.0.0.0:7777
 
 update:
   canaries: 1
