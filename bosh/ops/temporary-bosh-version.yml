@@ -1,9 +1,0 @@
----
-# TODO: remove this whenever bosh-deployment bumps bosh release
-- type: replace
-  path: /releases/name=bosh
-  value:
-    name: bosh
-    url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=261.4
-    sha1: 4da9cedbcc8fbf11378ef439fb89de08300ad091
-    version: 261.4

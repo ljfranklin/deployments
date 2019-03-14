@@ -39,7 +39,6 @@ pushd "${working_dir}" > /dev/null
     -o ./ops/ssl-cert.yml \
     -o ./ops/default-ssh.yml \
     -o ./ops/service-scopes.yml \
-    -o ./ops/temporary-bosh-version.yml \
     -o "${bosh_bot_dir}/bosh/bosh-ops-file.yml" \
     -l "${terraform_config}/metadata" \
     -l <( echo "${BOSH_BOT_SECRETS}" ) \
