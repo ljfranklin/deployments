@@ -5,7 +5,8 @@ releases:
 - name: concourse
   version: latest
 - name: postgres
-  version: latest
+  # version: latest
+  version: 25
 - name: bpm
   version: latest
 
