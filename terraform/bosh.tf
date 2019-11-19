@@ -6,7 +6,7 @@ provider "google" {
 
 provider "cloudflare" {
     email = "${var.cloudflare_email}"
-    api_token = "${var.cloudflare_token}"
+    api_key = "${var.cloudflare_token}"
 }
 
 resource "google_compute_network" "bosh" {
