@@ -100,7 +100,7 @@ resource "google_compute_address" "concourse" {
 }
 
 resource "cloudflare_record" "bosh-dns" {
-    domain = "${var.cloudflare_domain}"
+    zone_id = "${var.cloudflare_domain}"
     name = "bosh"
     value = "${google_compute_address.director.address}"
     type = "A"
@@ -108,7 +108,7 @@ resource "cloudflare_record" "bosh-dns" {
 }
 
 resource "cloudflare_record" "concourse-dns" {
-    domain = "${var.cloudflare_domain}"
+    zone_id = "${var.cloudflare_domain}"
     name = "concourse"
     value = "${google_compute_address.concourse.address}"
     type = "A"
