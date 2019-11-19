@@ -177,7 +177,7 @@ resources:
         deployments_bucket_name: {{deployments_bucket_name}}
         cloudflare_email: {{cloudflare_email}}
         cloudflare_token: {{cloudflare_token}}
-        cloudflare_domain: {{cloudflare_root_domain}}
+        cloudflare_zone_id: {{cloudflare_zone_id}}
   - name: director-vars-store
     type: gcs
     source:
