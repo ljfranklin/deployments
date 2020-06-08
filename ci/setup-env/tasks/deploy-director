@@ -42,7 +42,7 @@ pushd "${working_dir}" > /dev/null
     -o "${bosh_bot_dir}/bosh/bosh-ops-file.yml" \
     -l "${terraform_config}/metadata" \
     -l <( echo "${BOSH_BOT_SECRETS}" ) \
-    --var-file ssl_cert="$( echo ${ssl_certs_dir}/certificates/*.crt )" \
+    --var-file ssl_cert="$( ls ${ssl_certs_dir}/certificates/*.crt | grep -v 'issuer.crt')" \
     --var-file ssl_key="$( echo ${ssl_certs_dir}/certificates/*.key )" \
     -v director_name=bosh \
     -v gcp_credentials_json="'${GCP_CREDENTIALS_JSON}'" \
