@@ -1,17 +1,17 @@
 {
     "director_id": "aef117e1-f03e-4c92-50d6-aa04e5bb41c4",
     "installation_id": "876ee69f-8823-4f85-7075-984525696a7b",
-    "current_vm_cid": "vm-c660d31d-6553-4eab-5cec-d81fcbffe4fe",
-    "current_stemcell_id": "20adb354-11d7-47ee-5771-ff9ac00ecca2",
+    "current_vm_cid": "vm-f273f10f-866d-4c0d-6a7e-d9a7fd153847",
+    "current_stemcell_id": "5b982ba7-9508-49fb-77a5-4037c1f32b19",
     "current_disk_id": "6068b6de-0e95-42f6-6ed7-47d74e770bcc",
     "current_release_ids": [
-        "de545439-21f3-407f-61fd-be7c474110d2",
-        "97eecef9-cec0-4445-7b90-45c0545b5a63",
-        "84f6ffba-f5cb-4458-631d-73bcc04ebe6e",
-        "9bcec785-59a8-4002-5952-16229dbfd8f4",
-        "22aa158a-9eae-4196-645d-b4940d19e5d1"
+        "c2b8bb86-c1e2-49f6-6174-3393db9b54c7",
+        "20233c71-4dff-4bf2-4546-24c73f8f27d0",
+        "b4dd0e67-156a-4b13-4222-3661c4879d74",
+        "e764cf61-ef2e-4006-6464-23f4db737c55",
+        "05ef34f2-b69c-47f7-7628-11f0ecaef6c7"
     ],
-    "current_manifest_sha": "62090d1090ad399934ee1f1d5183858c8835de4b3a68d553366c088ac810763125cc6f729837dba56ff1be93f7df4ac3ecd04bbe4fa78dea9cdd4d5d524652ac",
+    "current_manifest_sha": "8c808622e17e963a5ef1125cfe42aa276b3a0e3296d26836d686e55143e43df5040abc0b051cf73a467bc5aa0c166639ba720d8c7cb34569524e3dafa0e98e30",
     "disks": [
         {
             "id": "6068b6de-0e95-42f6-6ed7-47d74e770bcc",
@@ -24,36 +24,36 @@
     ],
     "stemcells": [
         {
-            "id": "20adb354-11d7-47ee-5771-ff9ac00ecca2",
+            "id": "5b982ba7-9508-49fb-77a5-4037c1f32b19",
             "name": "bosh-google-kvm-ubuntu-xenial-go_agent",
-            "version": "621.93",
+            "version": "621.101",
             "api_version": 3,
-            "cid": "https://www.googleapis.com/compute/v1/projects/bosh-cpi/global/images/stemcell-621-93-google-kvm-ubuntu-xenial-1606754742"
+            "cid": "https://www.googleapis.com/compute/v1/projects/bosh-cpi/global/images/stemcell-621-101-google-kvm-ubuntu-xenial-1612317207"
         }
     ],
     "releases": [
         {
-            "id": "de545439-21f3-407f-61fd-be7c474110d2",
+            "id": "c2b8bb86-c1e2-49f6-6174-3393db9b54c7",
             "name": "bosh",
-            "version": "271.2.0"
+            "version": "271.6.0"
         },
         {
-            "id": "97eecef9-cec0-4445-7b90-45c0545b5a63",
+            "id": "20233c71-4dff-4bf2-4546-24c73f8f27d0",
             "name": "bpm",
             "version": "1.1.9"
         },
         {
-            "id": "84f6ffba-f5cb-4458-631d-73bcc04ebe6e",
+            "id": "b4dd0e67-156a-4b13-4222-3661c4879d74",
             "name": "bosh-google-cpi",
-            "version": "40.0.3"
+            "version": "40.0.4"
         },
         {
-            "id": "9bcec785-59a8-4002-5952-16229dbfd8f4",
+            "id": "e764cf61-ef2e-4006-6464-23f4db737c55",
             "name": "os-conf",
             "version": "22.1.0"
         },
         {
-            "id": "22aa158a-9eae-4196-645d-b4940d19e5d1",
+            "id": "05ef34f2-b69c-47f7-7628-11f0ecaef6c7",
             "name": "bosh-bot",
             "version": "0.0.14-rc.2"
         }
