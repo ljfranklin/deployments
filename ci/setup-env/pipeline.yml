@@ -27,7 +27,7 @@ jobs:
     serial_groups: [deploy]
     plan:
       - do:
-        - aggregate:
+        - in_parallel:
           - get: ssl-certs
             trigger: true
           - get: deployments-src
@@ -43,8 +43,8 @@ jobs:
           file: deployments-src/ci/setup-env/tasks/deploy-director.yml
           output_mapping: {output-src: updated-deployments-src}
           params:
-            GCP_CREDENTIALS_JSON: {{gce_credentials_json}}
-            BOSH_BOT_SECRETS: {{bosh_bot_secrets}}
+            GCP_CREDENTIALS_JSON: ((gce_credentials_json))
+            BOSH_BOT_SECRETS: ((bosh_bot_secrets))
           ensure:
             do:
             - task: commit-state-file
@@ -55,7 +55,7 @@ jobs:
                 GIT_ADD_ARGS: ./bosh/director-state.json
                 GIT_COMMIT_MSG: ":airplane: Auto-commit: Updating Director deployment state"
                 GIT_COMMIT_USERNAME: friendly-ci
-                GIT_COMMIT_EMAIL: {{git_commit_email}}
+                GIT_COMMIT_EMAIL: ((git_commit_email))
                 GIT_SUCCEED_ON_NO_CHANGES: true
             - put: deployments-src
               params:
@@ -71,7 +71,7 @@ jobs:
     serial_groups: [deploy]
     plan:
       - do:
-        - aggregate:
+        - in_parallel:
           - get: deployments-src
           - get: ssl-certs
           - get: sunday-night
@@ -81,9 +81,9 @@ jobs:
           input_mapping: {input-src: ssl-certs}
           output_mapping: {output-src: updated-ssl-certs}
           params:
-            CLOUDFLARE_EMAIL:   {{cloudflare_email}}
-            CLOUDFLARE_API_KEY: {{cloudflare_token}}
-            CLOUDFLARE_DOMAINS: {{cloudflare_domains}}
+            CLOUDFLARE_EMAIL:   ((cloudflare_email))
+            CLOUDFLARE_API_KEY: ((cloudflare_token))
+            CLOUDFLARE_DOMAINS: ((cloudflare_domains))
         - task: commit-certs
           file: deployments-src/ci/setup-env/tasks/git-commit.yml
           input_mapping: {input-src: updated-ssl-certs}
@@ -92,7 +92,7 @@ jobs:
             GIT_ADD_ARGS: .
             GIT_COMMIT_MSG: ":airplane: Auto-commit: Updating SSL Certs"
             GIT_COMMIT_USERNAME: friendly-ci
-            GIT_COMMIT_EMAIL: {{git_commit_email}}
+            GIT_COMMIT_EMAIL: ((git_commit_email))
             GIT_SUCCEED_ON_NO_CHANGES: true
         - put: ssl-certs
           params:
@@ -106,13 +106,13 @@ jobs:
     build_logs_to_retain: 2000 # ~7 days
     plan:
       - do:
-        - get: 5m
+        - get: every_5m
           trigger: true
         - get: deployments-src
         - task: curl-websites
           file: deployments-src/ci/setup-env/tasks/curl-websites.yml
           params:
-            URLS_TO_CURL: {{urls_to_curl}}
+            URLS_TO_CURL: ((urls_to_curl))
         on_failure: *failure-alert
         attempts: 5
 
@@ -137,13 +137,13 @@ resources:
     type: git
     source:
       uri: git@github.com:ljfranklin/deployments.git
-      private_key: {{deployments_github_deploy_key}}
+      private_key: ((deployments_github_deploy_key))
       branch: master
   - name: ssl-certs
     type: git
     source:
       uri: git@github.com:ljfranklin/ssl_certs.git
-      private_key: {{ssl_certs_github_deploy_key}}
+      private_key: ((ssl_certs_github_deploy_key))
       branch: master
   - name: bosh-deployment
     type: git
@@ -163,28 +163,28 @@ resources:
     source:
       backend_type: s3
       backend_config:
-        bucket: {{deployments_bucket_name}}
+        bucket: ((deployments_bucket_name))
         region: us-east-1
         key: terraform.tfstate
-        access_key: {{storage_access_key}}
-        secret_key: {{storage_secret_key}}
+        access_key: ((storage_access_key))
+        secret_key: ((storage_secret_key))
         workspace_key_prefix: terraform
         endpoint: https://storage.googleapis.com
         skip_credentials_validation: true
       vars:
-        projectid: {{gce_project_id}}
-        gce_credentials_json: {{gce_credentials_json}}
-        deployments_bucket_name: {{deployments_bucket_name}}
-        cloudflare_email: {{cloudflare_email}}
-        cloudflare_token: {{cloudflare_token}}
-        cloudflare_zone_id: {{cloudflare_zone_id}}
+        projectid: ((gce_project_id))
+        gce_credentials_json: ((gce_credentials_json))
+        deployments_bucket_name: ((deployments_bucket_name))
+        cloudflare_email: ((cloudflare_email))
+        cloudflare_token: ((cloudflare_token))
+        cloudflare_zone_id: ((cloudflare_zone_id))
   - name: director-vars-store
     type: gcs
     source:
-      bucket: {{deployments_bucket_name}}
-      json_key: {{gce_credentials_json}}
+      bucket: ((deployments_bucket_name))
+      json_key: ((gce_credentials_json))
       versioned_file: director/vars-store.yml
-  - name: 5m
+  - name: every_5m
     type: time
     source:
       interval: 5m
@@ -198,4 +198,4 @@ resources:
   - name: slack-alert
     type: slack-notification
     source:
-      url: {{slack_integration_url}}
+      url: ((slack_integration_url))
