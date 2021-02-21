@@ -10,15 +10,15 @@ releases:
   version: latest
 
 stemcells:
-- alias: xenial
-  os: ubuntu-xenial
+- alias: bionic
+  os: ubuntu-bionic
   version: latest
 
 instance_groups:
 - name: concourse
   instances: 1
   vm_type: concourse
-  stemcell: xenial
+  stemcell: bionic
   azs: [z1]
   persistent_disk_type: 10GB
   networks:
