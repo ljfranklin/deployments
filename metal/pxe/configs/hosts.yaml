@@ -1,0 +1,102 @@
+hosts:
+- mac: "00:1e:06:31:d3:8b"
+  kernel:
+    path: "deps/odroid/kernel"
+  initrds:
+  - path: "deps/odroid/initrd"
+  force_pxe_linux: true
+  files:
+  - id: cloud_init_metadata
+    path: configs/shared/meta-data
+    template: true
+  - id: cloud_init_networking
+    path: configs/shared/network-config
+    template: true
+  - id: cloud_init_userdata
+    path: configs/shared/user-data
+    template: true
+  - id: disk_image
+    path: deps/odroid/root.img
+    gzip: true
+  boot_args:
+  - "netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
+  secrets:
+  - id: /cloud_init/users/admin/ssh_key
+    type: ssh_key
+  vars:
+    cloud_init:
+      hostname: cephapi0
+      users:
+      - name: admin
+        authorized_keys:
+        - '{{ (secret "/cloud_init/users/admin/ssh_key").public_key }}'
+      packages:
+      - openssh-server
+    installer:
+      files:
+      - url: '{{ file_url "cloud_init_metadata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/meta-data
+      - url: '{{ file_url "cloud_init_networking" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/network-config
+      - url: '{{ file_url "cloud_init_userdata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/user-data
+      disks:
+      - url: '{{ file_url "disk_image" }}'
+        gzip: true
+        dest_device: /dev/sda
+        mounts:
+        - partition: /dev/sda4
+          path: /root
+- mac: "01:1e:06:31:d3:8b"
+  kernel:
+    path: "deps/arm64/kernel"
+  initrds:
+  - path: "deps/arm64/initrd"
+  files:
+  - id: cloud_init_metadata
+    path: configs/shared/meta-data
+    template: true
+  - id: cloud_init_networking
+    path: configs/shared/network-config
+    template: true
+  - id: cloud_init_userdata
+    path: configs/shared/user-data
+    template: true
+  - id: disk_image
+    path: deps/arm64/root.img
+    gzip: true
+  boot_args:
+  - "netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
+  secrets:
+  - id: /cloud_init/users/admin/ssh_key
+    type: ssh_key
+  vars:
+    cloud_init:
+      hostname: unifi
+      users:
+      - name: admin
+        authorized_keys:
+        - '{{ (secret "/cloud_init/users/admin/ssh_key").public_key }}'
+      packages:
+      - openssh-server
+      network:
+        address: 192.168.1.10/24
+        gateway: 192.168.1.1
+        dns:
+        - 8.8.8.8
+        - 1.1.1.1
+    installer:
+      files:
+      - url: '{{ file_url "cloud_init_metadata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/meta-data
+      - url: '{{ file_url "cloud_init_networking" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/network-config
+      - url: '{{ file_url "cloud_init_userdata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/user-data
+      disks:
+      - url: '{{ file_url "disk_image" }}'
+        gzip: true
+        dest_device: /dev/sda
+        mounts:
+        - partition: /dev/sda4
+          path: /root

@@ -1,0 +1,33 @@
+#cloud-config
+# vim: syntax=yaml
+#
+{{ $vars := .vars.cloud_init }}
+
+fqdn: {{ $vars.hostname }}.localdomain
+manage_etc_hosts: true
+
+users:
+{{ range $vars.users }}
+- name: {{ .name }}
+  sudo: ALL=(ALL) NOPASSWD:ALL
+  shell: /bin/bash
+  home: /home/{{ .name }}
+  groups: [adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev]
+  ssh_authorized_keys:
+  {{ range .authorized_keys }}
+  - {{ . }}
+  {{ end }}
+{{ end }}
+
+locale: "en_US.UTF-8"
+
+growpart:
+  mode: auto
+  devices: ['/']
+
+package_upgrade: false
+
+packages:
+{{ range $vars.packages }}
+- {{ . }}
+{{ end }}

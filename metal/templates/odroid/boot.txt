@@ -1,0 +1,16 @@
+setenv fdtfile "exynos5422-odroidxu4.dtb"
+# U-boot's PXE boot will forward device tree if
+# 'fdt_addr' is set.
+setenv fdt_addr ${fdt_addr_r}
+
+if test -z "${distro_bootpart}"; then
+  setenv partition ${bootpart}
+else
+  setenv partition ${distro_bootpart}
+fi
+
+load ${devtype} ${devnum}:${partition} ${kernel_addr_r} EFI/boot/wrapper.efi
+load ${devtype} ${devnum}:${partition} ${fdt_addr_r} ${fdtfile}
+
+usb start
+bootefi ${kernel_addr_r} ${fdt_addr_r}

@@ -1,0 +1,15 @@
+#network-config
+# vim: syntax=yaml
+#
+version: 2
+ethernets:
+  eth0:
+    {{if not empty dig "network" "address" "" .vars.cloud_init }}
+    dhcp4: false
+    addresses: [{{ .vars.cloud_init.network.address }}]
+    gateway4: {{ .vars.cloud_init.network.gateway }}
+    nameservers:
+      addresses: {{ .vars.cloud_init.network.dns }}
+    {{else}}
+    dhcp4: true
+    {{end}}

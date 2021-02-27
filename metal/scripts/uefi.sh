@@ -5,13 +5,20 @@ set -eu -o pipefail
 project_dir="$( cd "$( dirname "$0" )" && cd .. && pwd )"
 tmpdir="$(mktemp -d /tmp/uefi.XXXXX)"
 build_dir="${tmpdir}/build"
+img_dir="${tmpdir}/img"
 mkdir "${build_dir}"
+mkdir "${img_dir}"
+
+umount_loop_device() {
+  if [ -n "${loop_device:-}" ]; then
+    sudo umount "${img_dir}"
+    sudo losetup -d "${loop_device}"
+    unset loop_device
+  fi
+}
 
 cleanup() {
-  if [ -n "${loop_device:-}" ]; then
-    umount "${loop_device}"
-    udisksctl loop-delete -b "${loop_device}" --no-user-interaction
-  fi
+  umount_loop_device
   rm -rf "${tmpdir}"
 }
 trap 'cleanup' EXIT
@@ -90,14 +97,16 @@ if [ -z "${output_file}" ]; then
   exit 1
 fi
 
-dd if=/dev/zero "of=${output_file}" bs=1024 count=10000
-mkfs.vfat "${output_file}"
-loop_device="$(udisksctl loop-setup -f "${output_file}" | grep -o '/dev/loop[0-9]\+')"
-set +e
-# swallow error code since OS may auto-mount new devices
-udisksctl mount -b "${loop_device}"
-set -e
-img_dir="$(mount | grep "^${loop_device} " | awk '{ print $3}')"
+dd if=/dev/zero "of=${output_file}" bs=1024 count=50000
+parted "${output_file}" --script -- mklabel msdos
+parted "${output_file}" --script -- mkpart primary fat32 4096s 100%
+sudo losetup -o "$((4096 * 512))" -f "${output_file}"
+loop_device="$(losetup -j "${output_file}" | grep -o '/dev/loop[0-9]\+')"
+sudo mkfs.vfat "${loop_device}"
+user_id="$(id -u "$(whoami)")"
+group_id="$(id -g "$(whoami)")"
+sudo mount -o loop,nosuid,uid="${user_id}",gid="${group_id}" \
+  "${loop_device}" "${img_dir}"
 
 build_edk2_raspberrypi() {
   pushd "${build_dir}" > /dev/null
@@ -162,9 +171,92 @@ build_grub_raspberrypi() {
   popd > /dev/null
 }
 
+build_ipxe_raspberrypi() {
+  pushd "${build_dir}" > /dev/null
+    wget -O ipxe.tar.gz https://github.com/ipxe/ipxe/archive/5bdb75c9d0a3616cb22fea662ddd763c81a3d9c6.tar.gz
+    mkdir ./ipxe
+    tar xf ipxe.tar.gz --strip-components=1 -C ipxe
+    pushd ipxe/src > /dev/null
+      wget https://raw.githubusercontent.com/danderson/netboot/bdaec9d82638460bf166fb98bdc6d97331d7bd80/pixiecore/boot.ipxe
+      CROSS=aarch64-linux-gnu- CONFIG=rpi EMBED=boot.ipxe \
+        make -j "$((`getconf _NPROCESSORS_ONLN` + 2))" bin-arm64-efi/rpi.efi
+      mkdir -p "${img_dir}/EFI/boot/"
+      cp bin-arm64-efi/rpi.efi "${img_dir}/EFI/boot/ipxe.efi"
+    popd > /dev/null
+  popd > /dev/null
+}
+
+build_uboot_odroid() {
+  pushd "${build_dir}" > /dev/null
+    # Use custom 'deploy-odroid_v2020.01' branch which is based on hardkernel's v2020.01 branch + ProxyDHCP support.
+    # I got Linux to boot with mainline u-boot but the kernel couldn't see any USB devices.
+    wget -O uboot.tar.gz https://github.com/ljfranklin/u-boot/archive/c3db827e12e1b058c1e84c334dfd182c27f3359e.tar.gz
+    mkdir ./uboot
+    tar xf uboot.tar.gz --strip-components=1 -C uboot
+    pushd uboot > /dev/null
+      echo 'CONFIG_SERVERIP_FROM_PROXYDHCP=y' >> configs/odroid-xu3_defconfig
+      CROSS_COMPILE=arm-linux-gnueabihf- make odroid-xu3_defconfig
+      CROSS_COMPILE=arm-linux-gnueabihf- make all
+    popd > /dev/null
+
+    cp uboot/u-boot-dtb.bin .
+    odroid_src_url="https://github.com/hardkernel/u-boot/raw/odroidxu3-v2012.07"
+    wget "${odroid_src_url}/sd_fuse/hardkernel_1mb_uboot/bl1.bin.hardkernel"
+    wget "${odroid_src_url}/sd_fuse/hardkernel_1mb_uboot/bl2.bin.hardkernel.1mb_uboot"
+    wget "${odroid_src_url}/sd_fuse/hardkernel_1mb_uboot/tzsw.bin.hardkernel"
+
+    mkdir kernel_deb
+    pushd kernel_deb > /dev/null
+      wget -O linux.deb https://launchpad.net/~ljfranklin/+archive/ubuntu/netboot/+files/linux-image-5.10.9-odroid-2_5.10.9-odroid-2-1_armhf.deb
+      dpkg -x linux.deb .
+    popd > /dev/null
+    cp $(find kernel_deb -name 'exynos5422-odroidxu4.dtb') "${img_dir}/"
+  popd > /dev/null
+}
+
+# TODO: Grub 2.04 fails to load under u-boot
+build_grub_odroid() {
+  pushd "${build_dir}" > /dev/null
+    # wget -O grub.tar.gz https://ftp.gnu.org/gnu/grub/grub-2.02.tar.gz
+    wget -O grub.tar.gz https://github.com/ljfranklin/grub/archive/81b51afebb087c655e2c4a3ec2e4eacfdbdd96f9.tar.gz
+    mkdir ./grub
+    tar xf grub.tar.gz --strip-components=1 -C grub
+    pushd grub > /dev/null
+      ./autogen.sh
+      ./configure --with-platform=efi --target=arm-linux-gnueabihf --disable-werror
+      make -j "$((`getconf _NPROCESSORS_ONLN` + 2))"
+      mkdir -p "${img_dir}/EFI/boot"
+      all_modules="$(find grub-core/ -name '*.mod' -exec basename {} .mod ';')"
+      # Use a non-standard prefix to ensure the wrapper always loads first.
+      ./grub-mkimage --directory grub-core --format arm-efi \
+        --prefix /EFI/boot/wrapper --output "${img_dir}/EFI/boot/wrapper.efi" \
+        ${all_modules}
+      mkdir -p "${img_dir}/EFI/boot/wrapper"
+      cp "${project_dir}"/templates/odroid/grub.cfg "${img_dir}/EFI/boot/wrapper/"
+      cp "${project_dir}"/templates/odroid/cmdline.cfg "${img_dir}/"
+      cp "${project_dir}"/templates/odroid/boot.txt "${img_dir}/"
+      mkimage -A arm -T script -C none -d "${img_dir}/boot.txt" "${img_dir}/boot.scr"
+    popd > /dev/null
+  popd > /dev/null
+}
+
+finalize_odroid_img() {
+  umount_loop_device
+  # Adapted from https://github.com/hardkernel/u-boot/blob/odroidxu3-v2012.07/sd_fuse/hardkernel_1mb_uboot/sd_fusing.1M.sh
+  dd if="${build_dir}/bl1.bin.hardkernel" of="${output_file}" seek=1 bs=512 conv=notrunc
+  dd if="${build_dir}/bl2.bin.hardkernel.1mb_uboot" of="${output_file}" seek=31 bs=512 conv=notrunc
+  dd if="${build_dir}/u-boot-dtb.bin" of="${output_file}" seek=63 bs=512 conv=notrunc
+  dd if="${build_dir}/tzsw.bin.hardkernel" of="${output_file}" seek=2111 bs=512 conv=notrunc
+}
+
 if [ "${arch}" = "arm64" ] && [ "${platform}" = "raspberrypi" ]; then
   build_edk2_raspberrypi
   build_grub_raspberrypi
+  build_ipxe_raspberrypi
+elif [ "${arch}" = "arm" ] && [ "${platform}" = "odroid" ]; then
+  build_uboot_odroid
+  build_grub_odroid
+  finalize_odroid_img
 else
   echo "Unknown arch + platform combination"
   exit 1
