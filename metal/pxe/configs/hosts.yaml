@@ -47,7 +47,7 @@ hosts:
         mounts:
         - partition: /dev/sda4
           path: /root
-- mac: "01:1e:06:31:d3:8b"
+- mac: "b8:27:eb:cb:9e:35"
   kernel:
     path: "deps/arm64/kernel"
   initrds:
@@ -66,7 +66,7 @@ hosts:
     path: deps/arm64/root.img
     gzip: true
   boot_args:
-  - "netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
+  - "console=ttyAMA0,115200 console=tty1 netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
   secrets:
   - id: /cloud_init/users/admin/ssh_key
     type: ssh_key
@@ -80,7 +80,7 @@ hosts:
       packages:
       - openssh-server
       network:
-        address: 192.168.1.10/24
+        address: 192.168.1.100/24
         gateway: 192.168.1.1
         dns:
         - 8.8.8.8

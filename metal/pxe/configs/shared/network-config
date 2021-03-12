@@ -4,7 +4,7 @@
 version: 2
 ethernets:
   eth0:
-    {{if not empty dig "network" "address" "" .vars.cloud_init }}
+    {{if not (empty (dig "network" "address" "" .vars.cloud_init) ) }}
     dhcp4: false
     addresses: [{{ .vars.cloud_init.network.address }}]
     gateway4: {{ .vars.cloud_init.network.gateway }}
