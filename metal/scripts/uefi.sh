@@ -110,7 +110,9 @@ sudo mount -o loop,nosuid,uid="${user_id}",gid="${group_id}" \
 
 build_edk2_raspberrypi() {
   pushd "${build_dir}" > /dev/null
-    wget -O firmware.tar.gz https://github.com/raspberrypi/firmware/archive/1.20201022.tar.gz
+    # Use 'stable' branch.
+    # wget -O firmware.tar.gz https://github.com/raspberrypi/firmware/archive/fcf8d2f7639ad8d0330db9c8db9b71bd33eaaa28.tar.gz
+    wget -O firmware.tar.gz https://github.com/raspberrypi/firmware/archive/1711f63174c5bfe147cc903af14e99a36938c105.tar.gz
     mkdir ./firmware
     tar xf firmware.tar.gz --strip-components=1 -C firmware
     mkdir "${img_dir}/overlays"
@@ -120,16 +122,20 @@ build_edk2_raspberrypi() {
     done
     cp "${project_dir}"/templates/raspberrypi/config.txt "${img_dir}"
 
-    git clone --depth 1 https://github.com/tianocore/edk2 -b edk2-stable202011
+    git clone https://github.com/tianocore/edk2
     pushd edk2 > /dev/null
+      git reset --hard 59a3ccb09e7a246913d88fbac31412f20f717a3c
       git submodule update --init
     popd > /dev/null
-    wget -O edk2-non-osi.tar.gz https://github.com/tianocore/edk2-non-osi/archive/3d1bb660664bcacb07bbfaa690e7b2cc35c412f3.tar.gz
+    wget -O edk2-non-osi.tar.gz https://github.com/tianocore/edk2-non-osi/archive/04744d2432baedb59382f090a2d22e23f6c4d215.tar.gz
     mkdir ./edk2-non-osi
     tar xf edk2-non-osi.tar.gz --strip-components=1 -C edk2-non-osi
-    wget -O edk2-platforms.tar.gz https://github.com/tianocore/edk2-platforms/archive/3f71a8fb114ae9ce87281eb30ab0e678f6806b05.tar.gz
-    mkdir ./edk2-platforms
-    tar xf edk2-platforms.tar.gz --strip-components=1 -C edk2-platforms
+    # TODO(ljfranklin): Switch back to upstream after patch is merged:
+    # https://github.com/pftf/RPi4/issues/122#issuecomment-797465514
+    git clone https://github.com/rtreffer/edk2-platforms
+    pushd edk2-platforms > /dev/null
+      git reset --hard ca053c606c216a0d90239e5fdcbd5118aa0660d6
+    popd > /dev/null
     export WORKSPACE=$PWD
     export PACKAGES_PATH=$PWD/edk2:$PWD/edk2-platforms:$PWD/edk2-non-osi
     export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
@@ -144,9 +150,10 @@ build_edk2_raspberrypi() {
 
       make -C BaseTools
       source edksetup.sh BaseTools
-      build -n "$((`getconf _NPROCESSORS_ONLN` + 2))" -a AARCH64 -t GCC5 -p Platform/RaspberryPi/RPi3/RPi3.dsc
+      build -n "$((`getconf _NPROCESSORS_ONLN` + 2))" -a AARCH64 -t GCC5 -b RELEASE \
+        -p Platform/RaspberryPi/RPi3/RPi3.dsc --pcd=PcdPlatformBootTimeOut=3
     popd > /dev/null
-    cp Build/RPi3/DEBUG_GCC5/FV/RPI_EFI.fd "${img_dir}"
+    cp Build/RPi3/RELEASE_GCC5/FV/RPI_EFI.fd "${img_dir}"
   popd > /dev/null
 }
 
@@ -173,12 +180,12 @@ build_grub_raspberrypi() {
 
 build_ipxe_raspberrypi() {
   pushd "${build_dir}" > /dev/null
-    wget -O ipxe.tar.gz https://github.com/ipxe/ipxe/archive/5bdb75c9d0a3616cb22fea662ddd763c81a3d9c6.tar.gz
+    wget -O ipxe.tar.gz https://github.com/ipxe/ipxe/archive/65bd5c05db2a050a4c0f26ccc0b1e9828b00abbf.tar.gz
     mkdir ./ipxe
     tar xf ipxe.tar.gz --strip-components=1 -C ipxe
     pushd ipxe/src > /dev/null
       wget https://raw.githubusercontent.com/danderson/netboot/bdaec9d82638460bf166fb98bdc6d97331d7bd80/pixiecore/boot.ipxe
-      CROSS=aarch64-linux-gnu- CONFIG=rpi EMBED=boot.ipxe \
+      CROSS_COMPILE=aarch64-linux-gnu- EMBED=boot.ipxe CONFIG=rpi \
         make -j "$((`getconf _NPROCESSORS_ONLN` + 2))" bin-arm64-efi/rpi.efi
       mkdir -p "${img_dir}/EFI/boot/"
       cp bin-arm64-efi/rpi.efi "${img_dir}/EFI/boot/ipxe.efi"
