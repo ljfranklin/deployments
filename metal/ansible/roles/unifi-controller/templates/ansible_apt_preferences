@@ -1,0 +1,13 @@
+# https://serverfault.com/a/382101/559607
+
+Package: *
+Pin: release a=stable
+Pin-Priority: 900
+
+Package: *
+Pin: release a=testing
+Pin-Priority: 400
+
+Package: *
+Pin: release a=unstable
+Pin-Priority: 50

@@ -1,0 +1,6 @@
+---
+- hosts: bootstrap
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - unifi-controller

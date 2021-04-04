@@ -1,0 +1,99 @@
+# TODO: move the apt stuff to different role
+- name: template apt preferences
+  template:
+    src: ./ansible_apt_preferences
+    dest: /etc/apt/preferences.d/ansible_apt_preferences
+- name: add testing apt repo
+  apt_repository:
+    repo: deb http://http.us.debian.org/debian testing main non-free contrib
+    update_cache: no
+- name: add testing-src apt repo
+  apt_repository:
+    repo: deb-src http://http.us.debian.org/debian testing main non-free contrib
+    update_cache: no
+- name: add testing security apt repo
+  apt_repository:
+    repo: deb http://security.debian.org/ testing-security main contrib non-free
+    update_cache: no
+- name: add unstable apt repo
+  apt_repository:
+    repo: deb http://http.us.debian.org/debian unstable main non-free contrib
+    update_cache: no
+- name: run apt update
+  apt:
+    update_cache: yes
+
+- name: install gpg
+  apt:
+    name: gpg
+    state: latest
+- name: add unifi apt gpg key
+  apt_key:
+    url: https://dl.ui.com/unifi/unifi-repo.gpg
+- name: add mongodb apt gpg key
+  apt_key:
+    url: https://www.mongodb.org/static/pgp/server-3.4.asc
+- name: add jfrog apt gpg key
+  apt_key:
+    url: https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+- name: add unifi apt repo
+  apt_repository:
+    repo: deb [arch=armhf] https://www.ui.com/downloads/unifi/debian stable ubiquiti
+    update_cache: no
+- name: add mongodb apt repo
+  apt_repository:
+    repo: deb [arch=arm64] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse
+    update_cache: no
+- name: add java8 apt repo
+  apt_repository:
+    repo: deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb buster main
+    update_cache: no
+- name: run apt update
+  apt:
+    update_cache: yes
+- name: install old libssl required by MongoDB
+  apt:
+    deb: http://launchpadlibrarian.net/362322446/libssl1.0.0_1.0.2n-1ubuntu5_arm64.deb
+- name: install old Java8 required by Unifi
+  apt:
+    name: adoptopenjdk-8-hotspot
+- name: Set JAVA_HOME
+  lineinfile:
+    dest: /etc/environment
+    state: present
+    regexp: '^JAVA_HOME'
+    line: 'JAVA_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-arm64'
+- name: install unifi
+  apt:
+    name: unifi
+    state: latest
+- name: install unzip
+  apt:
+    name: unzip
+- name: install terraform
+  unarchive:
+    remote_src: yes
+    src: https://releases.hashicorp.com/terraform/0.14.8/terraform_0.14.8_linux_arm64.zip
+    dest: /usr/local/bin
+- name: create terraform config directory
+  file:
+    path: /etc/ansible-assets/unifi-controller/terraform
+    state: directory
+- name: template terraform config
+  template:
+    src: ./terraform.tf
+    dest: /etc/ansible-assets/unifi-controller/terraform/terraform.tf
+# WARNING: This step will fail during first-time setup.
+# Manually complete the Unifi Web UI initial setup, e.g. configure admin user,
+# and adopt all hardware, then re-run this playbook.
+- name: import existing default network
+  shell: "terraform init && terraform import unifi_network.lan name=LAN"
+  args:
+    chdir: /etc/ansible-assets/unifi-controller/terraform
+    creates: terraform.tfstate
+- name: update unifi config
+  terraform:
+    project_path: /etc/ansible-assets/unifi-controller/terraform
+    force_init: yes
+    backend_config:
+      path: /etc/ansible-assets/unifi-controller/terraform/terraform.tfstate
