@@ -4,7 +4,8 @@
 {{ $vars := .vars.cloud_init }}
 
 fqdn: {{ $vars.hostname }}.localdomain
-manage_etc_hosts: true
+# /etc/hosts management fails on Arch Linux installs.
+manage_etc_hosts: false
 
 users:
 {{ range $vars.users }}
@@ -35,3 +36,6 @@ packages:
 runcmd:
 # Wait for NTP sync
 - "while true; do if timedatectl show | grep NTPSynchronized=yes > /dev/null; then break; else sleep 1; fi; done;"
+{{ range $vars.runcmds }}
+- {{ . }}
+{{ end }}

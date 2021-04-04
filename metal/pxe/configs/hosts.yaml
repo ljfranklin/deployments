@@ -1,4 +1,54 @@
 hosts:
+- mac: "1c:69:7a:60:d0:c4"
+  kernel:
+    path: "deps/amd64/kernel"
+  initrds:
+  - path: "deps/amd64/initrd"
+  files:
+  - id: cloud_init_metadata
+    path: configs/shared/meta-data
+    template: true
+  - id: cloud_init_networking
+    path: configs/shared/network-config
+    template: true
+  - id: cloud_init_userdata
+    path: configs/shared/user-data
+    template: true
+  - id: disk_image
+    path: deps/amd64/root.img
+    gzip: true
+  boot_args:
+  - "netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
+  secrets:
+  - id: /cloud_init/users/admin/ssh_key
+    type: ssh_key
+  vars:
+    cloud_init:
+      hostname: jules
+      users:
+      - name: admin
+        authorized_keys:
+        - '{{ (secret "/cloud_init/users/admin/ssh_key").public_key }}'
+      packages:
+      - openssh
+      runcmds:
+      - "systemctl enable sshd"
+      - "systemctl start --no-block sshd"
+    installer:
+      files:
+      - url: '{{ file_url "cloud_init_metadata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/meta-data
+      - url: '{{ file_url "cloud_init_networking" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/network-config
+      - url: '{{ file_url "cloud_init_userdata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/user-data
+      disks:
+      - url: '{{ file_url "disk_image" }}'
+        gzip: true
+        dest_device: /dev/nvme0n1
+        mounts:
+        - partition: /dev/nvme0n1p2
+          path: /root
 - mac: "00:1e:06:31:d3:8b"
   kernel:
     path: "deps/odroid/kernel"

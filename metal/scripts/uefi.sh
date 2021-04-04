@@ -98,7 +98,7 @@ if [ -z "${output_file}" ]; then
 fi
 
 dd if=/dev/zero "of=${output_file}" bs=1024 count=50000
-parted "${output_file}" --script -- mklabel msdos
+parted "${output_file}" --script -- mklabel gpt
 parted "${output_file}" --script -- mkpart primary fat32 4096s 100%
 sudo losetup -o "$((4096 * 512))" -f "${output_file}"
 loop_device="$(losetup -j "${output_file}" | grep -o '/dev/loop[0-9]\+')"
@@ -157,13 +157,32 @@ build_edk2_raspberrypi() {
   popd > /dev/null
 }
 
+build_grub_amd64() {
+  pushd "${build_dir}" > /dev/null
+    git clone https://git.savannah.gnu.org/git/grub.git
+    pushd grub > /dev/null
+      git reset --hard a53e530f8ad3770c3b03c208c08ae4162f68e3b1
+      ./bootstrap
+      ./configure --with-platform=efi --target=x86_64 --disable-werror
+      make -j "$((`getconf _NPROCESSORS_ONLN` + 2))"
+      mkdir -p "${img_dir}/EFI/boot"
+      # TODO(ljfranklin): figure out which module is causing crash
+      # all_modules="$(find grub-core/ -name '*.mod' -exec basename {} .mod ';')"
+      all_modules="boot chain configfile echo part_msdos part_gpt ntfs ext2 fat search search_fs_file test usb"
+      ./grub-mkimage --directory grub-core --format x86_64-efi \
+        --prefix /EFI/boot --output "${img_dir}/EFI/boot/bootx64.efi" \
+        ${all_modules}
+      cp "${project_dir}"/templates/amd64/grub.cfg "${img_dir}/EFI/boot/"
+    popd > /dev/null
+  popd > /dev/null
+}
+
 build_grub_raspberrypi() {
   pushd "${build_dir}" > /dev/null
-    wget -O grub.tar.gz https://ftp.gnu.org/gnu/grub/grub-2.04.tar.gz
-    mkdir ./grub
-    tar xf grub.tar.gz --strip-components=1 -C grub
+    git clone https://git.savannah.gnu.org/git/grub.git
     pushd grub > /dev/null
-      ./autogen.sh
+      git reset --hard a53e530f8ad3770c3b03c208c08ae4162f68e3b1
+      ./bootstrap
       ./configure --with-platform=efi --target=aarch64-linux-gnu --disable-werror
       make -j "$((`getconf _NPROCESSORS_ONLN` + 2))"
       mkdir -p "${img_dir}/EFI/boot"
@@ -174,6 +193,21 @@ build_grub_raspberrypi() {
         ${all_modules}
       mkdir -p "${img_dir}/EFI/boot/wrapper"
       cp "${project_dir}"/templates/raspberrypi/grub.cfg "${img_dir}/EFI/boot/wrapper/"
+    popd > /dev/null
+  popd > /dev/null
+}
+
+build_ipxe_amd64() {
+  pushd "${build_dir}" > /dev/null
+    wget -O ipxe.tar.gz https://github.com/ipxe/ipxe/archive/65bd5c05db2a050a4c0f26ccc0b1e9828b00abbf.tar.gz
+    mkdir ./ipxe
+    tar xf ipxe.tar.gz --strip-components=1 -C ipxe
+    pushd ipxe/src > /dev/null
+      wget https://raw.githubusercontent.com/danderson/netboot/bdaec9d82638460bf166fb98bdc6d97331d7bd80/pixiecore/boot.ipxe
+      EMBED=boot.ipxe \
+        make -j "$((`getconf _NPROCESSORS_ONLN` + 2))" bin-x86_64-efi/snp.efi
+      mkdir -p "${img_dir}/EFI/boot/"
+      cp bin-x86_64-efi/snp.efi "${img_dir}/EFI/boot/ipxe.efi"
     popd > /dev/null
   popd > /dev/null
 }
@@ -256,7 +290,10 @@ finalize_odroid_img() {
   dd if="${build_dir}/tzsw.bin.hardkernel" of="${output_file}" seek=2111 bs=512 conv=notrunc
 }
 
-if [ "${arch}" = "arm64" ] && [ "${platform}" = "raspberrypi" ]; then
+if [ "${arch}" = "amd64" ]; then
+  build_grub_amd64
+  build_ipxe_amd64
+elif [ "${arch}" = "arm64" ] && [ "${platform}" = "raspberrypi" ]; then
   build_edk2_raspberrypi
   build_grub_raspberrypi
   build_ipxe_raspberrypi
