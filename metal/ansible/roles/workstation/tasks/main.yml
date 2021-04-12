@@ -1,0 +1,227 @@
+# Terminal utils
+- name: update cache and upgrade all packages
+  pacman:
+    update_cache: yes
+    upgrade: yes
+- name: install terminal utils
+  pacman:
+    name:
+    - tree
+    - git
+    - strace
+    - jq
+    - zip
+    - unzip
+    - yubikey-manager
+    - pcsclite
+    - ripgrep
+    - file
+    - gparted
+    - htop
+    - tar
+    - gzip
+    - coreutils
+    - cmake
+- name: set locale
+  shell: 'localectl set-locale LANG=en_US.UTF-8'
+- name: setup git
+  become: no
+  shell: |
+    git config --global user.name '{{ git_name }}'
+    git config --global user.email '{{ git_email }}'
+    git config --global push.default simple
+    git config --global alias.co checkout
+    git config --global alias.br branch
+    git config --global alias.ci commit
+    git config --global alias.st status
+    git config --global alias.unstage 'reset HEAD --'
+    git config --global alias.lol "log --graph --decorate --pretty=oneline --abbrev-commit --all"
+    git config --global alias.hist "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short"
+- name: install network tools
+  pacman:
+    name:
+    - wget
+    - curl
+    - openbsd-netcat
+    - lsof
+    - nmap
+    - tcpdump
+    - tigervnc
+    - traceroute
+# Build tools
+- name: install build tools
+  pacman:
+    name:
+    - base-devel
+    - docker
+    - qemu
+    - qemu-arch-extra
+    - aarch64-linux-gnu-gcc
+    - npm
+    - go
+# Yay
+- name: download yay
+  git:
+    repo: https://aur.archlinux.org/yay.git
+    dest: /etc/yay
+- name: make yay dir writeable
+  file:
+    path: /etc/yay
+    recurse: yes
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+- name: install yay
+  become: no
+  shell: "makepkg --noconfirm --syncdeps --install"
+  args:
+    chdir: /etc/yay
+- name: upgrade all yay packages
+  become: no
+  aur:
+    upgrade: yes
+  environment:
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl"
+- name: install yay terminal utils
+  become: no
+  aur:
+    name:
+    - 1password-cli
+  environment:
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl"
+- name: install yay build tools
+  become: no
+  aur:
+    name:
+    - devscripts
+    - dput
+    - jigdo
+    # Currently broken, manually install with https://aur.archlinux.org/packages/arm-linux-gnueabihf-gcc/#comment-792716
+    - arm-linux-gnueabihf-gcc
+  environment:
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl"
+- name: install ginkgo
+  become: no
+  shell: "go get -u github.com/onsi/ginkgo/ginkgo"
+# Deployment utils
+- name: install terraform
+  unarchive:
+    remote_src: yes
+    src: https://releases.hashicorp.com/terraform/0.14.8/terraform_0.14.8_linux_amd64.zip
+    dest: /usr/local/bin
+- name: install packer
+  unarchive:
+    remote_src: yes
+    src: https://releases.hashicorp.com/packer/1.7.1/packer_1.7.1_linux_amd64.zip
+    dest: /usr/local/bin
+- name: install vagrant
+  unarchive:
+    remote_src: yes
+    src: https://releases.hashicorp.com/vagrant/2.2.15/vagrant_2.2.15_linux_amd64.zip
+    dest: /usr/local/bin
+- name: enable X11 forwarding
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    state: present
+    regexp: '(^|# ?)X11Forwarding'
+    line: 'X11Forwarding yes'
+- name: enable X11 forwarding (display offset)
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    state: present
+    regexp: '(^|# ?)X11DisplayOffset'
+    line: 'X11DisplayOffset 10'
+- name: enable X11 forwarding (no localhost)
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    state: present
+    regexp: '(^|# ?)X11UseLocalhost'
+    line: 'X11UseLocalhost no'
+- name: restart sshd
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: sshd
+- name: install vim
+  pacman:
+    name:
+    - vim
+- name: download vim config
+  become: no
+  git:
+    repo: https://github.com/amix/vimrc.git
+    dest: '/home/{{ ansible_user }}/.vim_runtime'
+    depth: 1
+- name: install vim config
+  become: no
+  shell: '/home/{{ ansible_user }}/.vim_runtime/install_awesome_vimrc.sh'
+- name: template custom vim options
+  become: no
+  template:
+    src: ./my_configs.vim
+    dest: '/home/{{ ansible_user }}/.vim_runtime/my_configs.vim'
+- name: download bash_it
+  become: no
+  git:
+    repo: https://github.com/Bash-it/bash-it.git
+    dest: '/home/{{ ansible_user }}/.bash_it'
+    depth: 1
+- name: install bash_it
+  become: no
+  shell: '/home/{{ ansible_user }}/.bash_it/install.sh'
+- name: setup bash_it
+  become: no
+  shell: |
+    export BASH_IT='/home/{{ ansible_user }}/.bash_it'
+    source "${BASH_IT}/bash_it.sh"
+    bash-it enable plugin base history-search go
+    bash-it enable alias general git clipboard
+    bash-it enable completion git
+  args:
+    executable: /bin/bash
+- name: install bash_it theme
+  become: no
+  template:
+    src: ./modern.theme.bash
+    dest: '/home/{{ ansible_user }}/.bash_it/custom/modern.theme.bash'
+- name: set vim as EDITOR
+  become: no
+  template:
+    src: ./vim.plugin.bash
+    dest: '/home/{{ ansible_user }}/.bash_it/custom/vim.plugin.bash'
+- name: enable gpg agent for ssh
+  become: no
+  template:
+    src: ./gpgagent.plugin.bash
+    dest: '/home/{{ ansible_user }}/.bash_it/custom/gpgagent.plugin.bash'
+- name: set bash_it theme
+  lineinfile:
+    dest: '/home/{{ ansible_user }}/.bashrc'
+    state: present
+    regexp: "export BASH_IT_THEME='bobby'"
+    line: "export BASH_IT_THEME='/home/{{ ansible_user }}/.bash_it/custom/modern.theme.bash'"
+- name: cleanup backup file to allow re-run
+  file:
+    path: '/home/{{ ansible_user }}/.bashrc.bak'
+    state: absent
+- name: install tmux
+  pacman:
+    name:
+    - tmux
+    - powerline
+    - powerline-fonts
+- name: install tmux helpers
+  become: no
+  aur:
+    name:
+    - tmux-mem-cpu-load-git
+- name: install tmux config
+  become: no
+  template:
+    src: ./tmux.conf
+    dest: '/home/{{ ansible_user }}/.tmux.conf'
+- name: download tmux plugin manager
+  become: no
+  git:
+    repo: https://github.com/tmux-plugins/tpm
+    dest: '/home/{{ ansible_user }}/.tmux/plugins/tpm'
+    depth: 1

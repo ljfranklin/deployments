@@ -4,3 +4,8 @@
   become: yes
   roles:
     - unifi-controller
+- hosts: workstation
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - workstation

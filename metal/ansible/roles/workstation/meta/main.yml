@@ -1,0 +1,3 @@
+# Run 'ansible-galaxy install -r requirements.yml'.
+dependencies:
+- kewlfft.aur
