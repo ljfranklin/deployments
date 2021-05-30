@@ -124,18 +124,15 @@ build_edk2_raspberrypi() {
 
     git clone https://github.com/tianocore/edk2
     pushd edk2 > /dev/null
-      git reset --hard 59a3ccb09e7a246913d88fbac31412f20f717a3c
+      git reset --hard f297b7f20010711e36e981fe45645302cc9d109d
       git submodule update --init
     popd > /dev/null
     wget -O edk2-non-osi.tar.gz https://github.com/tianocore/edk2-non-osi/archive/04744d2432baedb59382f090a2d22e23f6c4d215.tar.gz
     mkdir ./edk2-non-osi
     tar xf edk2-non-osi.tar.gz --strip-components=1 -C edk2-non-osi
-    # TODO(ljfranklin): Switch back to upstream after patch is merged:
-    # https://github.com/pftf/RPi4/issues/122#issuecomment-797465514
-    git clone https://github.com/rtreffer/edk2-platforms
-    pushd edk2-platforms > /dev/null
-      git reset --hard ca053c606c216a0d90239e5fdcbd5118aa0660d6
-    popd > /dev/null
+    wget -O edk2-platforms.tar.gz https://github.com/tianocore/edk2-platforms/archive/a996c765008d8f1d51617f610c83410135529450.tar.gz
+    mkdir ./edk2-platforms
+    tar xf edk2-platforms.tar.gz --strip-components=1 -C edk2-platforms
     export WORKSPACE=$PWD
     export PACKAGES_PATH=$PWD/edk2:$PWD/edk2-platforms:$PWD/edk2-non-osi
     export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
