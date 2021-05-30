@@ -37,6 +37,18 @@
     git config --global alias.unstage 'reset HEAD --'
     git config --global alias.lol "log --graph --decorate --pretty=oneline --abbrev-commit --all"
     git config --global alias.hist "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short"
+- name: make workspace dir
+  become: no
+  file:
+    state: directory
+    dest: '/home/{{ ansible_user }}/workspace'
+- name: download git repos
+  become: no
+  git:
+    repo: '{{ item }}'
+    dest: '/home/{{ ansible_user }}/workspace/{{ (item | basename | splitext)[:-1] | join(".") }}'
+    accept_hostkey: yes
+  loop: '{{ workspace_git_repos }}'
 - name: install network tools
   pacman:
     name:
@@ -81,6 +93,9 @@
     upgrade: yes
   environment:
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl"
+- name: import 1password key
+  become: no
+  shell: 'gpg --recv-keys 3FEF9748469ADBE15DA7CA80AC2D62742012EA22'
 - name: install yay terminal utils
   become: no
   aur:
@@ -92,10 +107,14 @@
   become: no
   aur:
     name:
-    - devscripts
+    # Currently returning 404
+    # - devscripts
     - dput
-    - jigdo
-    # Currently broken, manually install with https://aur.archlinux.org/packages/arm-linux-gnueabihf-gcc/#comment-792716
+    # Also broken: https://aur.archlinux.org/packages/jigdo/#comment-810349, manually download jigdo-file from
+    # https://storage.googleapis.com/ansible-assets/jigdo-file
+    # - jigdo
+    # Currently broken, manually install with https://aur.archlinux.org/packages/arm-linux-gnueabihf-gcc/#comment-792716 and
+    # remove '-Werror=format-security' from /etc/makepkg.conf
     - arm-linux-gnueabihf-gcc
   environment:
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl"
@@ -106,7 +125,7 @@
 - name: install terraform
   unarchive:
     remote_src: yes
-    src: https://releases.hashicorp.com/terraform/0.14.8/terraform_0.14.8_linux_amd64.zip
+    src: https://releases.hashicorp.com/terraform/0.15.4/terraform_0.15.4_linux_amd64.zip
     dest: /usr/local/bin
 - name: install packer
   unarchive:
@@ -118,6 +137,17 @@
     remote_src: yes
     src: https://releases.hashicorp.com/vagrant/2.2.15/vagrant_2.2.15_linux_amd64.zip
     dest: /usr/local/bin
+- name: send hostname to DHCP server
+  lineinfile:
+    dest: /etc/dhcpcd.conf
+    state: present
+    regexp: '(^|# ?)hostname'
+    line: 'hostname'
+- name: restart dhcpcd
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: 'dhcpcd@eth0.service'
 - name: enable X11 forwarding
   lineinfile:
     dest: /etc/ssh/sshd_config
@@ -167,7 +197,7 @@
     depth: 1
 - name: install bash_it
   become: no
-  shell: '/home/{{ ansible_user }}/.bash_it/install.sh'
+  shell: '/home/{{ ansible_user }}/.bash_it/install.sh -s'
 - name: setup bash_it
   become: no
   shell: |

@@ -1,0 +1,6 @@
+window:
+  title: Terminal
+font:
+  normal:
+    family: Hack
+  size: 12

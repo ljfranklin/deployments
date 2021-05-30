@@ -1,0 +1,141 @@
+- name: update cache and upgrade all packages
+  pacman:
+    update_cache: yes
+    upgrade: yes
+- name: install gui utils
+  pacman:
+    name:
+    - xorg-xwayland
+    - lightdm
+    - sway
+    - swayidle
+    - waybar
+    - alacritty
+    - ttf-hack
+    - ttf-font-awesome
+    - pulseaudio
+    - pavucontrol
+    - udiskie
+    - firefox
+    - chromium
+    - light-locker
+    - vlc
+    - gimp
+- name: install aur gui utils
+  become: no
+  aur:
+    name:
+    - lightdm-slick-greeter
+    - rofi-lbonn-wayland-git
+    - udiskie-dmenu-git
+    - clipman-git
+- name: make share dir for clipman
+  become: no
+  file:
+    state: directory
+    dest: '/home/{{ ansible_user }}/.local/share'
+    recurse: yes
+- name: switch login greeter
+  lineinfile:
+    dest: /etc/lightdm/lightdm.conf
+    state: present
+    regexp: '(^|# ?)greeter-session='
+    line: 'greeter-session=lightdm-slick-greeter'
+# The slick greeter doesn't really support this yet:
+# https://github.com/linuxmint/slick-greeter/issues/150
+- name: populate window manager list
+  lineinfile:
+    dest: /etc/lightdm/lightdm.conf
+    state: present
+    regexp: '(^|# ?)sessions-directory='
+    line: 'sessions-directory=/usr/share/lightdm/sessions:/usr/share/xsessions:/usr/share/wayland-sessions'
+# TODO(ljfranklin): Remove once issue is fixed: https://github.com/canonical/lightdm/issues/63
+- name: workaround lightdm wayland race condition
+  template:
+    src: ./99-lightdm-sleep-hack.sh
+    dest: /etc/X11/xinit/xinitrc.d/99-lightdm-sleep-hack.sh
+- name: set sway as default window manager
+  become: no
+  template:
+    src: ./dmrc
+    dest: '/home/{{ ansible_user }}/.dmrc'
+- name: download desktop background
+  get_url:
+    url: https://github.com/unix121/i3wm-themer/raw/c2d6d44438b5d23393afd13ddd80cd933cc00099/src/wallpapers/005.png
+    dest: /etc/lightdm/background.png
+- name: make sway dir
+  become: no
+  file:
+    state: directory
+    dest: '/home/{{ ansible_user }}/.config/sway'
+    recurse: yes
+- name: add sway config
+  become: no
+  template:
+    src: ./sway.config
+    dest: '/home/{{ ansible_user }}/.config/sway/config'
+- name: set gui env vars (~/.xprofile is sourced by lightdm)
+  become: no
+  template:
+    src: ./xprofile
+    dest: '/home/{{ ansible_user }}/.xprofile'
+- name: add sway lock script
+  become: no
+  template:
+    src: ./sway-lock.sh
+    dest: '/home/{{ ansible_user }}/.config/sway/sway-lock.sh'
+    mode: '755'
+- name: add sway display off script
+  become: no
+  template:
+    src: ./sway-display-off.sh
+    dest: '/home/{{ ansible_user }}/.config/sway/sway-display-off.sh'
+    mode: '755'
+- name: add sway display on script
+  become: no
+  template:
+    src: ./sway-display-on.sh
+    dest: '/home/{{ ansible_user }}/.config/sway/sway-display-on.sh'
+    mode: '755'
+- name: add sway cheat sheet
+  become: no
+  template:
+    src: ./sway-cheat-sheet.txt
+    dest: '/home/{{ ansible_user }}/.config/sway/sway-cheat-sheet.txt'
+- name: make waybar dir
+  become: no
+  file:
+    state: directory
+    dest: '/home/{{ ansible_user }}/.config/waybar'
+    recurse: yes
+- name: add waybar config
+  become: no
+  template:
+    src: ./waybar.config
+    dest: '/home/{{ ansible_user }}/.config/waybar/config'
+- name: add waybar css
+  become: no
+  template:
+    src: ./waybar.css
+    dest: '/home/{{ ansible_user }}/.config/waybar/style.css'
+- name: add greeter config
+  template:
+    src: ./slick-greeter.conf
+    dest: /etc/lightdm/slick-greeter.conf
+- name: make alacritty dir
+  become: no
+  file:
+    state: directory
+    dest: '/home/{{ ansible_user }}/.config/alacritty'
+    recurse: yes
+- name: add alacritty config
+  become: no
+  template:
+    src: ./alacritty.yml
+    dest: '/home/{{ ansible_user }}/.config/alacritty/alacritty.yml'
+- name: enable lightdm
+  systemd:
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+    name: lightdm

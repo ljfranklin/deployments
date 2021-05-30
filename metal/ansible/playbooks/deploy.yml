@@ -9,3 +9,5 @@
   become: yes
   roles:
     - workstation
+    - workstation-gui
+    # - nvidia-ml

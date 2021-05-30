@@ -1,0 +1,32 @@
+=================================================
+sway cheat sheet
+=================================================
+windows:
+$mod + j                 focus left
+$mod + k                 focus down
+$mod + l                 focus up
+$mod + ;                 focus right
+$mod + <shift> + j       move window left
+$mod + <shift> + k       move window down
+$mod + <shift> + l       move window up
+$mod + <shift> + ;       move window right
+$mod + f                 toggle fullscreen
+$mod + v                 split vertically
+$mod + h                 split horizontally
+resizing:
+$mod + r                 enter resize mode
+enter                    leave resize mode
+j                        shrink width by 10px
+k                        grow height by 10px
+l                        shrink height by 10px
+;                        grow width by 10px
+workspaces:
+$mod + [0-9]             switch to workspace
+$mod + <shift> + [0-9]   move window to workspace
+launchers:
+$mod + d                 open app launcher
+$mod + p                 open clipboard manager
+$mod + <shift> + c       reload sway config
+$mod + <shift> + e       exit sway
+$mod + `                 lock screen
+$mod + /                 show this help text

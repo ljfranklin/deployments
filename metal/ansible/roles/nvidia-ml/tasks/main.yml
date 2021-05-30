@@ -1,0 +1,12 @@
+- name: update cache and upgrade all packages
+  pacman:
+    update_cache: yes
+    upgrade: yes
+- name: install nvidia drivers + CUDA
+  pacman:
+    name:
+    - nvidia
+    - cuda
+    # For demos, e.g. /opt/cuda/extras/demo_suite/randomFog
+    - glu
+    - freeglut
