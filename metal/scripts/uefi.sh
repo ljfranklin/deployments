@@ -126,6 +126,9 @@ build_edk2_raspberrypi() {
     pushd edk2 > /dev/null
       git reset --hard f297b7f20010711e36e981fe45645302cc9d109d
       git submodule update --init
+      cd BaseTools/Source/C/BrotliCompress/brotli
+      wget -O "${tmpdir}/edk2.patch" https://patch-diff.githubusercontent.com/raw/google/brotli/pull/893.patch
+      git apply "${tmpdir}/edk2.patch"
     popd > /dev/null
     wget -O edk2-non-osi.tar.gz https://github.com/tianocore/edk2-non-osi/archive/04744d2432baedb59382f090a2d22e23f6c4d215.tar.gz
     mkdir ./edk2-non-osi
@@ -201,8 +204,9 @@ build_ipxe_amd64() {
     tar xf ipxe.tar.gz --strip-components=1 -C ipxe
     pushd ipxe/src > /dev/null
       wget https://raw.githubusercontent.com/danderson/netboot/bdaec9d82638460bf166fb98bdc6d97331d7bd80/pixiecore/boot.ipxe
+      # Set CFLAGS to workaround https://github.com/ipxe/ipxe/issues/359
       EMBED=boot.ipxe \
-        make -j "$((`getconf _NPROCESSORS_ONLN` + 2))" bin-x86_64-efi/snp.efi
+        make EXTRA_CFLAGS="-Wno-error=maybe-uninitialized" -j "$((`getconf _NPROCESSORS_ONLN` + 2))" bin-x86_64-efi/snp.efi
       mkdir -p "${img_dir}/EFI/boot/"
       cp bin-x86_64-efi/snp.efi "${img_dir}/EFI/boot/ipxe.efi"
     popd > /dev/null
