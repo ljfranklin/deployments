@@ -27,6 +27,7 @@ hosts:
       hostname: jules
       users:
       - name: admin
+        password: '{{ (secret "/cloud_init/users/admin/password") }}'
         authorized_keys:
         - '{{ (secret "/cloud_init/users/admin/ssh_key").public_key }}'
       packages:

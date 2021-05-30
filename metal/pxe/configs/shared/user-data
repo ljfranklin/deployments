@@ -14,6 +14,10 @@ users:
   shell: /bin/bash
   home: /home/{{ .name }}
   groups: [adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev]
+  {{if not (empty (dig "password" "" .) ) }}
+  lock_passwd: false
+  plain_text_passwd: '{{dig "password" "" .}}'
+  {{end}}
   ssh_authorized_keys:
   {{ range .authorized_keys }}
   - {{ . }}
