@@ -1,17 +1,17 @@
 {
     "director_id": "aef117e1-f03e-4c92-50d6-aa04e5bb41c4",
     "installation_id": "876ee69f-8823-4f85-7075-984525696a7b",
-    "current_vm_cid": "vm-68a4643c-fd3f-48e6-7308-a886a5e527d9",
-    "current_stemcell_id": "5f7e3e31-d05b-4677-4e51-b8740ee2cdda",
+    "current_vm_cid": "vm-d6c380ca-0e2d-4f5b-75c9-6af19f81cc99",
+    "current_stemcell_id": "115c67a1-1787-4f4f-4b70-152b72ad5d61",
     "current_disk_id": "6068b6de-0e95-42f6-6ed7-47d74e770bcc",
     "current_release_ids": [
-        "cb8b1b38-d1e6-49a3-41aa-5e02a91d2d4c",
-        "4b4d64cc-8b3c-44d5-60fd-6be9aa232045",
-        "9deca51e-0d32-4ebb-5a4d-9beb10600b33",
-        "4dd63c33-0b9d-48f2-7c0d-d6b192604c6f",
-        "567da8a5-5758-430f-79f7-a0871740b9e2"
+        "48faf21d-0226-4b86-4be1-db30cf41ed61",
+        "5c9295cc-0e8a-4387-46a3-d75d92cf10b7",
+        "e8ba397b-ee19-4014-4072-9e32d40608e2",
+        "00164ad9-df29-4dba-5e0b-d4d7c2321fd2",
+        "d46f25f1-a094-4e46-60da-f9da5b516c40"
     ],
-    "current_manifest_sha": "a4cc3f5eb96a51b56e68f5e8c15188b01cf9c143ea0cc4f033a12c90b05c67876865011718c5bd844d1c9d5b0500c829f720587a3cbae239c0694ff533dfb229",
+    "current_manifest_sha": "f9f0b106348459eb4563e350685afda036c30f4f69181d4c1e7a515232f104eca8b9ba54440d22225c0dcec1aae0c59166d23672d558bb8900636400a98c8ccc",
     "disks": [
         {
             "id": "6068b6de-0e95-42f6-6ed7-47d74e770bcc",
@@ -24,36 +24,36 @@
     ],
     "stemcells": [
         {
-            "id": "5f7e3e31-d05b-4677-4e51-b8740ee2cdda",
-            "name": "bosh-google-kvm-ubuntu-xenial-go_agent",
-            "version": "621.117",
+            "id": "115c67a1-1787-4f4f-4b70-152b72ad5d61",
+            "name": "bosh-google-kvm-ubuntu-bionic-go_agent",
+            "version": "1.1",
             "api_version": 3,
-            "cid": "https://www.googleapis.com/compute/v1/projects/bosh-cpi/global/images/stemcell-621-117-google-kvm-ubuntu-xenial-1616651852"
+            "cid": "https://www.googleapis.com/compute/v1/projects/bosh-cpi/global/images/stemcell-1-1-google-kvm-ubuntu-bionic-1620234916"
         }
     ],
     "releases": [
         {
-            "id": "cb8b1b38-d1e6-49a3-41aa-5e02a91d2d4c",
+            "id": "48faf21d-0226-4b86-4be1-db30cf41ed61",
             "name": "bosh",
-            "version": "271.7.0"
+            "version": "271.8.0"
         },
         {
-            "id": "4b4d64cc-8b3c-44d5-60fd-6be9aa232045",
+            "id": "5c9295cc-0e8a-4387-46a3-d75d92cf10b7",
             "name": "bpm",
-            "version": "1.1.9"
+            "version": "1.1.11"
         },
         {
-            "id": "9deca51e-0d32-4ebb-5a4d-9beb10600b33",
+            "id": "e8ba397b-ee19-4014-4072-9e32d40608e2",
             "name": "bosh-google-cpi",
             "version": "40.0.4"
         },
         {
-            "id": "4dd63c33-0b9d-48f2-7c0d-d6b192604c6f",
+            "id": "00164ad9-df29-4dba-5e0b-d4d7c2321fd2",
             "name": "os-conf",
-            "version": "22.1.0"
+            "version": "22.1.1"
         },
         {
-            "id": "567da8a5-5758-430f-79f7-a0871740b9e2",
+            "id": "d46f25f1-a094-4e46-60da-f9da5b516c40",
             "name": "bosh-bot",
             "version": "0.0.14-rc.2"
         }
