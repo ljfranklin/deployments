@@ -15,3 +15,6 @@ syntax on
 
 " Fix delay in exiting insert mode
 set noesckeys
+
+" Fix deprecation warning
+let g:snipMate = { 'snippet_version' : 1 }
