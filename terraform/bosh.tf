@@ -1,3 +1,14 @@
+terraform {
+  required_providers {
+    cloudflare = {
+      source = "cloudflare/cloudflare"
+    }
+    google = {
+      source = "google"
+    }
+  }
+}
+
 provider "google" {
     project = "${var.projectid}"
     region = "${var.gce_region}"
