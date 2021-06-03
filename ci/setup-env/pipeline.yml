@@ -121,7 +121,7 @@ resource_types:
     type: docker-image
     source:
       repository: ljfranklin/terraform-resource
-      tag: beta-backend
+      tag: latest
   - name: slack-notification
     type: docker-image
     source:
