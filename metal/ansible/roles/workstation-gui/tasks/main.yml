@@ -97,6 +97,12 @@
     src: ./sway-display-on.sh
     dest: '/home/{{ ansible_user }}/.config/sway/sway-display-on.sh'
     mode: '755'
+- name: add sway ssh script
+  become: no
+  template:
+    src: ./sway-ssh.sh
+    dest: '/home/{{ ansible_user }}/.config/sway/sway-ssh.sh'
+    mode: '755'
 - name: add sway cheat sheet
   become: no
   template:
