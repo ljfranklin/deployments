@@ -98,9 +98,7 @@ if [ -z "${output_file}" ]; then
 fi
 
 dd if=/dev/zero "of=${output_file}" bs=1024 count=50000
-# TODO(ljfranklin): fix gpt header
 parted "${output_file}" --script -- mklabel gpt
-# parted "${output_file}" --script -- mklabel msdos
 parted "${output_file}" --script -- mkpart primary fat32 4096s 100%
 sudo losetup -o "$((4096 * 512))" -f "${output_file}"
 loop_device="$(losetup -j "${output_file}" | grep -o '/dev/loop[0-9]\+')"
