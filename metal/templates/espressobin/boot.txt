@@ -1,0 +1,10 @@
+if test -z "${distro_bootpart}"; then
+  setenv partition ${bootpart}
+else
+  setenv partition ${distro_bootpart}
+fi
+
+load ${devtype} ${devnum}:${partition} ${kernel_addr_r} EFI/boot/wrapper.efi
+
+usb start
+bootefi ${kernel_addr_r} ${fdt_addr_r}

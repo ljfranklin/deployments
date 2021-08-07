@@ -13,6 +13,9 @@ uefi_amd64.img:
 uefi_raspberrypi.img:
 	./scripts/uefi.sh --arch arm64 --platform raspberrypi --output-file uefi_raspberrypi.img
 
+uefi_espressobin.img:
+	./scripts/uefi.sh --arch arm64 --platform espressobin --output-file uefi_espressobin.img
+
 uefi_odroid.img:
 	./scripts/uefi.sh --arch arm --platform odroid --output-file uefi_odroid.img
 

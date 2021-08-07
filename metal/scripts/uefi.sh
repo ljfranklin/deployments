@@ -98,7 +98,9 @@ if [ -z "${output_file}" ]; then
 fi
 
 dd if=/dev/zero "of=${output_file}" bs=1024 count=50000
+# TODO(ljfranklin): fix gpt header
 parted "${output_file}" --script -- mklabel gpt
+# parted "${output_file}" --script -- mklabel msdos
 parted "${output_file}" --script -- mkpart primary fat32 4096s 100%
 sudo losetup -o "$((4096 * 512))" -f "${output_file}"
 loop_device="$(losetup -j "${output_file}" | grep -o '/dev/loop[0-9]\+')"
@@ -177,7 +179,8 @@ build_grub_amd64() {
   popd > /dev/null
 }
 
-build_grub_raspberrypi() {
+build_grub_arm64() {
+  grub_templates="$1"
   pushd "${build_dir}" > /dev/null
     git clone https://git.savannah.gnu.org/git/grub.git
     pushd grub > /dev/null
@@ -192,7 +195,8 @@ build_grub_raspberrypi() {
         --prefix /EFI/boot/wrapper --output "${img_dir}/EFI/boot/wrapper.efi" \
         ${all_modules}
       mkdir -p "${img_dir}/EFI/boot/wrapper"
-      cp "${project_dir}"/templates/raspberrypi/grub.cfg "${img_dir}/EFI/boot/wrapper/"
+      cp "${grub_templates}"/grub.cfg "${img_dir}/EFI/boot/wrapper/"
+      cp "${grub_templates}"/cmdline.* "${img_dir}/EFI/boot/wrapper/"
     popd > /dev/null
   popd > /dev/null
 }
@@ -213,7 +217,7 @@ build_ipxe_amd64() {
   popd > /dev/null
 }
 
-build_ipxe_raspberrypi() {
+build_ipxe_arm64() {
   pushd "${build_dir}" > /dev/null
     wget -O ipxe.tar.gz https://github.com/ipxe/ipxe/archive/65bd5c05db2a050a4c0f26ccc0b1e9828b00abbf.tar.gz
     mkdir ./ipxe
@@ -225,6 +229,111 @@ build_ipxe_raspberrypi() {
       mkdir -p "${img_dir}/EFI/boot/"
       cp bin-arm64-efi/rpi.efi "${img_dir}/EFI/boot/ipxe.efi"
     popd > /dev/null
+  popd > /dev/null
+}
+
+build_flash_espressobin() {
+  pushd "${build_dir}" > /dev/null
+    wget -O uboot.tar.gz https://github.com/u-boot/u-boot/archive/840658b093976390e9537724f802281c9c8439f5.tar.gz
+    mkdir ./uboot
+    tar xf uboot.tar.gz --strip-components=1 -C uboot
+    pushd uboot > /dev/null
+      echo 'CONFIG_SERVERIP_FROM_PROXYDHCP=y' >> configs/mvebu_espressobin-88f3720_defconfig
+      CROSS_COMPILE=aarch64-linux-gnu- make mvebu_espressobin-88f3720_defconfig u-boot.bin
+    popd > /dev/null
+
+    git clone https://gitlab.nic.cz/turris/mox-boot-builder.git
+    pushd mox-boot-builder > /dev/null
+      git reset --hard b8928b294a863f2c698c4b230e598f984828a2ad
+      make CROSS_CM3=arm-linux-gnueabihf- wtmi_app.bin
+    popd > /dev/null
+
+    git clone https://github.com/ARM-software/arm-trusted-firmware atf
+    pushd atf > /dev/null
+      git reset --hard c158878249f1bd930906ebd744b90d3f2a8265f1
+    popd > /dev/null
+    git clone https://github.com/weidai11/cryptopp
+    pushd cryptopp > /dev/null
+      git reset --hard bc7d1bafa1e8ac732396374f0bca94ab9f396f1c
+    popd > /dev/null
+    git clone https://github.com/MarvellEmbeddedProcessors/mv-ddr-marvell
+    pushd mv-ddr-marvell > /dev/null
+      git reset --hard 02e23dbcf8dd22e038986052d99319a0eba8f25f
+    popd > /dev/null
+    git clone https://github.com/MarvellEmbeddedProcessors/A3700-utils-marvell
+    pushd A3700-utils-marvell > /dev/null
+      git reset --hard 2efdb10f3524c534d276002adf81fec06e0f1cf2
+    popd > /dev/null
+    mkdir arm-gcc
+    pushd arm-gcc > /dev/null
+      wget -O arm.tar.xz https://releases.linaro.org/components/toolchain/binaries/latest-6/arm-linux-gnueabi/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabi.tar.xz
+      tar xf arm.tar.xz --strip-components=1
+    popd > /dev/null
+    make -C atf CROSS_COMPILE=aarch64-linux-gnu- CROSS_CM3="$PWD/arm-gcc/bin/arm-linux-gnueabi-" \
+      USE_COHERENT_MEM=0 PLAT=a3700 CLOCKSPRESET=CPU_1200_DDR_750 DDR_TOPOLOGY=6 \
+      MV_DDR_PATH="$PWD/mv-ddr-marvell/" WTP="$PWD/A3700-utils-marvell/" \
+      DEBUG=1 CRYPTOPP_PATH="$PWD/cryptopp/" BL33="$PWD/uboot/u-boot.bin" \
+      WTMI_IMG="$PWD/mox-boot-builder/wtmi_app.bin" FIP_ALIGN=0x100 \
+      -j "$((`getconf _NPROCESSORS_ONLN` + 2))" \
+      all \
+      mrvl_flash \
+      mrvl_uart
+
+    uart_dir="${img_dir}/uart"
+    mkdir "${uart_dir}"
+    cp "$PWD/A3700-utils-marvell/wtptp/linux/WtpDownload_linux" "${uart_dir}"
+    cp "$PWD"/atf/build/a3700/debug/uart-images/{TIM_ATF.bin,wtmi_h.bin,boot-image_h.bin} "${uart_dir}"
+    cp "$PWD/atf/build/a3700/debug/flash-image.bin" "${img_dir}"
+    cat << 'EOF' > "${uart_dir}/flash.sh"
+#!/bin/bash
+
+set -eu
+
+if [ "$(whoami)" != "root" ]; then
+  echo "Error: Must run this script as root!"
+  exit 1
+fi
+
+my_dir="$( cd "$( dirname "$0" )" && pwd )"
+uart_device="${1:-/dev/ttyUSB0}"
+uart_index=${uart_device#/dev/ttyUSB}
+
+pushd "${my_dir}" > /dev/null
+  ./WtpDownload_linux -P UART -C "${uart_index}" -R 115200 \
+    -B ./TIM_ATF.bin -I ./wtmi_h.bin \
+    -I ./boot-image_h.bin -E
+popd > /dev/null
+EOF
+    chmod +x "${uart_dir}/flash.sh"
+
+    cat << 'EOF' > "${img_dir}/README.md"
+## Update Bootloader
+
+1. Set boot jumpers to UART:
+   - J3 (top):     1-2 (right)
+   - J11 (middle): 1-2 (right)
+   - J10 (bottom): 2-3 (left)
+2. Write UEFI image to SD card:
+   `sudo dd if=uefi_espressobin.img of=/dev/sda bs=4M status=progress oflag=sync`
+3. Copy `uart` directory from SD card to your workstation
+4. Put SD card into espressobin and connect USB cable
+5. Connect to UART: `sudo screen -L /dev/ttyUSB0 115200`
+6. Type `wtp` in UART
+7. In another terminal, run `sudo uart/flash.sh`
+8. Wait for "Success" message
+9. Reconnect to UART with `screen`
+10. Once bootloader reloads, run `bubt flash-image.bin spi mmc`
+   to flash new bootloader to SPI from SD card
+11. After update completes, power off board
+12. Set boot jumpers to SPI:
+   - J3 (top):     2-3 (left)
+   - J11 (middle): 2-3 (left)
+   - J10 (bottom): 1-2 (right)
+EOF
+    chmod +x "${uart_dir}/flash.sh"
+
+    cp "${project_dir}"/templates/espressobin/boot.txt "${img_dir}/"
+    mkimage -A arm -T script -C none -d "${img_dir}/boot.txt" "${img_dir}/boot.scr"
   popd > /dev/null
 }
 
@@ -296,8 +405,12 @@ if [ "${arch}" = "amd64" ]; then
   build_ipxe_amd64
 elif [ "${arch}" = "arm64" ] && [ "${platform}" = "raspberrypi" ]; then
   build_edk2_raspberrypi
-  build_grub_raspberrypi
-  build_ipxe_raspberrypi
+  build_grub_arm64 "${project_dir}"/templates/raspberrypi/
+  build_ipxe_arm64
+elif [ "${arch}" = "arm64" ] && [ "${platform}" = "espressobin" ]; then
+  build_flash_espressobin
+  build_grub_arm64 "${project_dir}"/templates/espressobin/
+  build_ipxe_arm64
 elif [ "${arch}" = "arm" ] && [ "${platform}" = "odroid" ]; then
   build_uboot_odroid
   build_grub_odroid
