@@ -236,8 +236,18 @@ build_flash_espressobin() {
     mkdir ./uboot
     tar xf uboot.tar.gz --strip-components=1 -C uboot
     pushd uboot > /dev/null
+      git apply "${project_dir}/templates/espressobin/0001-uboot-pxe-colon.patch"
       echo 'CONFIG_SERVERIP_FROM_PROXYDHCP=y' >> configs/mvebu_espressobin-88f3720_defconfig
       CROSS_COMPILE=aarch64-linux-gnu- make mvebu_espressobin-88f3720_defconfig u-boot.bin
+    popd > /dev/null
+
+    wget -O linux.tar.gz https://github.com/torvalds/linux/archive/refs/tags/v5.13.tar.gz
+    mkdir ./linux
+    tar xf linux.tar.gz --strip-components=1 -C linux
+    pushd linux > /dev/null
+      make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
+      make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- marvell/armada-3720-espressobin-v7.dtb
+      cp arch/arm64/boot/dts/marvell/armada-3720-espressobin-v7.dtb "${img_dir}"
     popd > /dev/null
 
     git clone https://gitlab.nic.cz/turris/mox-boot-builder.git
@@ -267,8 +277,9 @@ build_flash_espressobin() {
       wget -O arm.tar.xz https://releases.linaro.org/components/toolchain/binaries/latest-6/arm-linux-gnueabi/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabi.tar.xz
       tar xf arm.tar.xz --strip-components=1
     popd > /dev/null
+    # TODO(ljfranklin): faster clock speed? CLOCKSPRESET=CPU_1200_DDR_750
     make -C atf CROSS_COMPILE=aarch64-linux-gnu- CROSS_CM3="$PWD/arm-gcc/bin/arm-linux-gnueabi-" \
-      USE_COHERENT_MEM=0 PLAT=a3700 CLOCKSPRESET=CPU_1200_DDR_750 DDR_TOPOLOGY=6 \
+      USE_COHERENT_MEM=0 PLAT=a3700 CLOCKSPRESET=CPU_1000_DDR_800 DDR_TOPOLOGY=6 \
       MV_DDR_PATH="$PWD/mv-ddr-marvell/" WTP="$PWD/A3700-utils-marvell/" \
       DEBUG=1 CRYPTOPP_PATH="$PWD/cryptopp/" BL33="$PWD/uboot/u-boot.bin" \
       WTMI_IMG="$PWD/mox-boot-builder/wtmi_app.bin" FIP_ALIGN=0x100 \
@@ -327,6 +338,8 @@ EOF
    - J3 (top):     2-3 (left)
    - J11 (middle): 2-3 (left)
    - J10 (bottom): 1-2 (right)
+13. At U-boot prompt, enter:
+   `env set bootcmd "load mmc 0:1 ${scriptaddr} boot.scr; source ${scriptaddr}"; env save`
 EOF
     chmod +x "${uart_dir}/flash.sh"
 
@@ -408,7 +421,6 @@ elif [ "${arch}" = "arm64" ] && [ "${platform}" = "raspberrypi" ]; then
 elif [ "${arch}" = "arm64" ] && [ "${platform}" = "espressobin" ]; then
   build_flash_espressobin
   build_grub_arm64 "${project_dir}"/templates/espressobin/
-  build_ipxe_arm64
 elif [ "${arch}" = "arm" ] && [ "${platform}" = "odroid" ]; then
   build_uboot_odroid
   build_grub_odroid
