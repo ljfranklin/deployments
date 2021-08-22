@@ -50,12 +50,12 @@ hosts:
         mounts:
         - partition: /dev/nvme0n1p2
           path: /root
-- mac: "00:1e:06:31:d3:8b"
-  kernel:
-    path: "deps/odroid/kernel"
-  initrds:
-  - path: "deps/odroid/initrd"
+- mac: "f0:ad:4e:10:1b:87"
   force_pxe_linux: true
+  kernel:
+    path: "deps/arm64/kernel"
+  initrds:
+  - path: "deps/arm64/initrd"
   files:
   - id: cloud_init_metadata
     path: configs/shared/meta-data
@@ -67,10 +67,10 @@ hosts:
     path: configs/shared/user-data
     template: true
   - id: disk_image
-    path: deps/odroid/root.img
+    path: deps/arm64/root.img
     gzip: true
   boot_args:
-  - "netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
+  - "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
   secrets:
   - id: /cloud_init/users/admin/ssh_key
     type: ssh_key
@@ -83,6 +83,10 @@ hosts:
         - '{{ (secret "/cloud_init/users/admin/ssh_key").public_key }}'
       packages:
       - openssh-server
+      networks:
+      - interface: lan0
+      - interface: lan1
+      - interface: wan0
     installer:
       files:
       - url: '{{ file_url "cloud_init_metadata" }}'
@@ -94,9 +98,9 @@ hosts:
       disks:
       - url: '{{ file_url "disk_image" }}'
         gzip: true
-        dest_device: /dev/sda
+        dest_device: /dev/sdb
         mounts:
-        - partition: /dev/sda4
+        - partition: /dev/sdb4
           path: /root
 - mac: "b8:27:eb:cb:9e:35"
   kernel:
@@ -130,10 +134,10 @@ hosts:
         - '{{ (secret "/cloud_init/users/admin/ssh_key").public_key }}'
       packages:
       - openssh-server
-      network:
-        address: 192.168.1.100/24
+      networks:
+      - addresses: [192.168.1.100/24]
         gateway: 192.168.1.1
-        dns:
+        dns_servers:
         - 8.8.8.8
         - 1.1.1.1
     installer:

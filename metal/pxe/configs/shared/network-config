@@ -2,14 +2,23 @@
 # vim: syntax=yaml
 #
 version: 2
+{{- $networks := dig "networks" (list (dict)) .vars.cloud_init }}
 ethernets:
-  eth0:
-    {{if not (empty (dig "network" "address" "" .vars.cloud_init) ) }}
+  {{- range $unused, $network := $networks }}
+  "{{ dig "interface" "eth0" $network }}":
+    {{- if not (empty (dig "addresses" "" $network) ) }}
     dhcp4: false
-    addresses: [{{ .vars.cloud_init.network.address }}]
-    gateway4: {{ .vars.cloud_init.network.gateway }}
+    addresses:
+    {{- range $unused, $address := $network.addresses }}
+    - {{ $address }}
+    {{- end }}
+    gateway4: {{ $network.gateway }}
     nameservers:
-      addresses: {{ .vars.cloud_init.network.dns }}
-    {{else}}
+      addresses:
+      {{- range $unused, $address := $network.dns_servers }}
+      - {{ $address }}
+      {{- end }}
+    {{ else }}
     dhcp4: true
-    {{end}}
+    {{- end -}}
+  {{- end }}

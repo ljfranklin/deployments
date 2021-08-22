@@ -7,6 +7,7 @@ fqdn: {{ $vars.hostname }}.localdomain
 # /etc/hosts management fails on Arch Linux installs.
 manage_etc_hosts: false
 
+{{if not (empty (dig "users" "" $vars) ) }}
 users:
 {{ range $vars.users }}
 - name: {{ .name }}
@@ -18,10 +19,13 @@ users:
   lock_passwd: false
   plain_text_passwd: '{{dig "password" "" .}}'
   {{end}}
+  {{if not (empty (dig "authorized_keys" "" .) ) }}
   ssh_authorized_keys:
   {{ range .authorized_keys }}
   - {{ . }}
   {{ end }}
+  {{ end }}
+{{ end }}
 {{ end }}
 
 locale: "en_US.UTF-8"
@@ -32,14 +36,18 @@ growpart:
 
 package_upgrade: false
 
+{{if not (empty (dig "packages" "" $vars) ) }}
 packages:
 {{ range $vars.packages }}
 - {{ . }}
+{{ end }}
 {{ end }}
 
 runcmd:
 # Wait for NTP sync
 - "while true; do if timedatectl show | grep NTPSynchronized=yes > /dev/null; then break; else sleep 1; fi; done;"
+{{if not (empty (dig "runcmds" "" $vars) ) }}
 {{ range $vars.runcmds }}
 - {{ . }}
+{{ end }}
 {{ end }}
