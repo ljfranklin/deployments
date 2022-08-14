@@ -1,17 +1,17 @@
 {
     "director_id": "aef117e1-f03e-4c92-50d6-aa04e5bb41c4",
     "installation_id": "876ee69f-8823-4f85-7075-984525696a7b",
-    "current_vm_cid": "vm-6e3ef109-789a-45ac-70e2-2fe3c844d830",
-    "current_stemcell_id": "ede24672-6994-4c5e-72b9-6d2c4aa3855d",
+    "current_vm_cid": "vm-0162d527-337e-4276-78b8-87b7f7b720ae",
+    "current_stemcell_id": "a5688757-7e74-4548-5d91-eac42ad832c5",
     "current_disk_id": "6068b6de-0e95-42f6-6ed7-47d74e770bcc",
     "current_release_ids": [
-        "84d47066-b3ef-43ef-79af-cdc485cb18e6",
-        "c2fe0847-13a5-4723-7832-e2ee84f67b6d",
-        "d4ac2dd1-aeb6-4712-5194-c3ebdd6fd9c8",
-        "b106d663-b20b-4567-6d7d-f0d7526653b1",
-        "c3a1db52-7150-4034-6553-0af9db2d37a8"
+        "7f0cb99a-275c-44fc-7585-c77eaaf4999d",
+        "bce5cbbb-fb72-4b07-6e8d-1a8c1c1732e7",
+        "b2badf4f-a9ad-479a-466e-82c4cc228127",
+        "857fd842-a96c-4828-6dc5-b919054a8ed6",
+        "bc68bda2-3da6-431a-4875-912f1b2bab26"
     ],
-    "current_manifest_sha": "97957c72ebf901c7ed712e0f771f4fea8382f95f7dd877e6b0c5fdd4b44a6e3f3303cf2fd768ba2bd07c737ed2753c4dae9f3ac395a1b1173fe12891d51df465",
+    "current_manifest_sha": "eba6e5834e76b2dbcf40f3913cd30134fe216720f0a467a35f2959a65cd40fc5e2e10b0ba27ba80b3a4c06f7f70cc162dc9208cfed9a06fe680f17a39957f430",
     "disks": [
         {
             "id": "6068b6de-0e95-42f6-6ed7-47d74e770bcc",
@@ -24,36 +24,36 @@
     ],
     "stemcells": [
         {
-            "id": "ede24672-6994-4c5e-72b9-6d2c4aa3855d",
-            "name": "bosh-google-kvm-ubuntu-bionic-go_agent",
-            "version": "1.88",
+            "id": "a5688757-7e74-4548-5d91-eac42ad832c5",
+            "name": "bosh-google-kvm-ubuntu-jammy-go_agent",
+            "version": "1.2",
             "api_version": 3,
-            "cid": "https://www.googleapis.com/compute/v1/projects/cloud-foundry-310819/global/images/stemcell-1-88-google-kvm-ubuntu-bionic-1654792865"
+            "cid": "https://www.googleapis.com/compute/v1/projects/cloud-foundry-310819/global/images/stemcell-1-2-google-kvm-ubuntu-jammy-1658839552"
         }
     ],
     "releases": [
         {
-            "id": "84d47066-b3ef-43ef-79af-cdc485cb18e6",
+            "id": "7f0cb99a-275c-44fc-7585-c77eaaf4999d",
             "name": "bosh",
-            "version": "272.5.0"
+            "version": "273.0.0"
         },
         {
-            "id": "c2fe0847-13a5-4723-7832-e2ee84f67b6d",
+            "id": "bce5cbbb-fb72-4b07-6e8d-1a8c1c1732e7",
             "name": "bpm",
             "version": "1.1.18"
         },
         {
-            "id": "d4ac2dd1-aeb6-4712-5194-c3ebdd6fd9c8",
+            "id": "b2badf4f-a9ad-479a-466e-82c4cc228127",
             "name": "bosh-google-cpi",
             "version": "43.0.0"
         },
         {
-            "id": "b106d663-b20b-4567-6d7d-f0d7526653b1",
+            "id": "857fd842-a96c-4828-6dc5-b919054a8ed6",
             "name": "os-conf",
             "version": "22.1.2"
         },
         {
-            "id": "c3a1db52-7150-4034-6553-0af9db2d37a8",
+            "id": "bc68bda2-3da6-431a-4875-912f1b2bab26",
             "name": "bosh-bot",
             "version": "0.0.14-rc.2"
         }
