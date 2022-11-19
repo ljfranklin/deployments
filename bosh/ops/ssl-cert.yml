@@ -11,6 +11,3 @@
 
 - type: remove
   path: /instance_groups/name=bosh/properties/hm/director_account/ca_cert?
-
-- type: remove
-  path: /variables/name=director_ssl?
