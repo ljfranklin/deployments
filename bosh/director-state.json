@@ -1,8 +1,8 @@
 {
     "director_id": "aef117e1-f03e-4c92-50d6-aa04e5bb41c4",
     "installation_id": "876ee69f-8823-4f85-7075-984525696a7b",
-    "current_vm_cid": "vm-c2d79e20-1a24-48ad-7b86-2bfabcf006ad",
-    "current_stemcell_id": "26304be7-acb7-47af-7585-d0c8207afbe8",
+    "current_vm_cid": "vm-825a1512-0e3d-4429-6614-e9eedfd77f33",
+    "current_stemcell_id": "c0cf8084-57ad-426a-7426-efc35acd01b5",
     "current_disk_id": "6068b6de-0e95-42f6-6ed7-47d74e770bcc",
     "current_release_ids": [],
     "current_manifest_sha": "",
@@ -30,6 +30,13 @@
             "version": "1.71",
             "api_version": 3,
             "cid": "https://www.googleapis.com/compute/v1/projects/cloud-foundry-310819/global/images/stemcell-1-71-google-kvm-ubuntu-jammy-1671017566"
+        },
+        {
+            "id": "c0cf8084-57ad-426a-7426-efc35acd01b5",
+            "name": "bosh-google-kvm-ubuntu-jammy-go_agent",
+            "version": "1.83",
+            "api_version": 3,
+            "cid": "https://www.googleapis.com/compute/v1/projects/cloud-foundry-310819/global/images/stemcell-1-83-google-kvm-ubuntu-jammy-1675891377"
         }
     ],
     "releases": []
