@@ -43,6 +43,13 @@ packages:
 {{ end }}
 {{ end }}
 
+{{if not (empty (dig "bootcmds" "" $vars) ) }}
+bootcmd:
+{{ range $vars.bootcmds }}
+- {{ . }}
+{{end}}
+{{end}}
+
 runcmd:
 # Wait for NTP sync
 - "while true; do if timedatectl show | grep NTPSynchronized=yes > /dev/null; then break; else sleep 1; fi; done;"

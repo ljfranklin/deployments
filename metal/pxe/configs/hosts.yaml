@@ -20,8 +20,8 @@ hosts:
   boot_args:
   - "netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
   secrets:
-  - id: /cloud_init/users/admin/ssh_key
-    type: ssh_key
+  - id: /cloud_init/users/admin/password
+    type: password
   vars:
     cloud_init:
       hostname: jules
@@ -29,7 +29,7 @@ hosts:
       - name: admin
         password: '{{ (secret "/cloud_init/users/admin/password") }}'
         authorized_keys:
-        - '{{ (secret "/cloud_init/users/admin/ssh_key").public_key }}'
+        - '{{ (shared_secret "/cloud_init/users/admin/ssh_key").public_key }}'
       packages:
       - openssh
       runcmds:
@@ -71,22 +71,126 @@ hosts:
     gzip: true
   boot_args:
   - "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
-  secrets:
-  - id: /cloud_init/users/admin/ssh_key
-    type: ssh_key
   vars:
     cloud_init:
-      hostname: cephapi0
+      hostname: ceph2
       users:
       - name: admin
         authorized_keys:
-        - '{{ (secret "/cloud_init/users/admin/ssh_key").public_key }}'
+        - '{{ (shared_secret "/cloud_init/users/admin/ssh_key").public_key }}'
       packages:
       - openssh-server
       networks:
+      - interface: eth0
       - interface: lan0
-      - interface: lan1
-      - interface: wan0
+      bootcmds:
+      # The root image is built with qemu which has a tty of ttyAMA0, but the espressobin uses ttyMV0.
+      - "rm -rf /etc/systemd/system/getty.target.wants/serial-getty@ttyAMA0.service"
+      - "if [ ! -e /etc/systemd/system/getty.target.wants/serial-getty@ttyMV0.service ]; then ln -s /lib/systemd/system/serial-getty@.service /etc/systemd/system/getty.target.wants/serial-getty@ttyMV0.service; fi"
+    installer:
+      files:
+      - url: '{{ file_url "cloud_init_metadata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/meta-data
+      - url: '{{ file_url "cloud_init_networking" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/network-config
+      - url: '{{ file_url "cloud_init_userdata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/user-data
+      disks:
+      - url: '{{ file_url "disk_image" }}'
+        gzip: true
+        dest_device: /dev/sdb
+        mounts:
+        - partition: /dev/sdb4
+          path: /root
+- mac: "f0:ad:4e:10:1b:32"
+  force_pxe_linux: true
+  kernel:
+    path: "deps/arm64/kernel"
+  initrds:
+  - path: "deps/arm64/initrd"
+  files:
+  - id: cloud_init_metadata
+    path: configs/shared/meta-data
+    template: true
+  - id: cloud_init_networking
+    path: configs/shared/network-config
+    template: true
+  - id: cloud_init_userdata
+    path: configs/shared/user-data
+    template: true
+  - id: disk_image
+    path: deps/arm64/root.img
+    gzip: true
+  boot_args:
+  - "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
+  vars:
+    cloud_init:
+      hostname: ceph3
+      users:
+      - name: admin
+        authorized_keys:
+        - '{{ (shared_secret "/cloud_init/users/admin/ssh_key").public_key }}'
+      packages:
+      - openssh-server
+      networks:
+      - interface: eth0
+      - interface: lan0
+      bootcmds:
+      # The root image is built with qemu which has a tty of ttyAMA0, but the espressobin uses ttyMV0.
+      - "rm -rf /etc/systemd/system/getty.target.wants/serial-getty@ttyAMA0.service"
+      - "if [ ! -e /etc/systemd/system/getty.target.wants/serial-getty@ttyMV0.service ]; then ln -s /lib/systemd/system/serial-getty@.service /etc/systemd/system/getty.target.wants/serial-getty@ttyMV0.service; fi"
+    installer:
+      files:
+      - url: '{{ file_url "cloud_init_metadata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/meta-data
+      - url: '{{ file_url "cloud_init_networking" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/network-config
+      - url: '{{ file_url "cloud_init_userdata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/user-data
+      disks:
+      - url: '{{ file_url "disk_image" }}'
+        gzip: true
+        dest_device: /dev/sdb
+        mounts:
+        - partition: /dev/sdb4
+          path: /root
+- mac: "f0:ad:4e:10:1b:af"
+  force_pxe_linux: true
+  kernel:
+    path: "deps/arm64/kernel"
+  initrds:
+  - path: "deps/arm64/initrd"
+  files:
+  - id: cloud_init_metadata
+    path: configs/shared/meta-data
+    template: true
+  - id: cloud_init_networking
+    path: configs/shared/network-config
+    template: true
+  - id: cloud_init_userdata
+    path: configs/shared/user-data
+    template: true
+  - id: disk_image
+    path: deps/arm64/root.img
+    gzip: true
+  boot_args:
+  - "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
+  vars:
+    cloud_init:
+      hostname: ceph4
+      users:
+      - name: admin
+        authorized_keys:
+        - '{{ (shared_secret "/cloud_init/users/admin/ssh_key").public_key }}'
+      packages:
+      - openssh-server
+      networks:
+      - interface: eth0
+      - interface: lan0
+      bootcmds:
+      # The root image is built with qemu which has a tty of ttyAMA0, but the espressobin uses ttyMV0.
+      - "rm -rf /etc/systemd/system/getty.target.wants/serial-getty@ttyAMA0.service"
+      - "if [ ! -e /etc/systemd/system/getty.target.wants/serial-getty@ttyMV0.service ]; then ln -s /lib/systemd/system/serial-getty@.service /etc/systemd/system/getty.target.wants/serial-getty@ttyMV0.service; fi"
     installer:
       files:
       - url: '{{ file_url "cloud_init_metadata" }}'
@@ -122,16 +226,13 @@ hosts:
     gzip: true
   boot_args:
   - "console=ttyAMA0,115200 console=tty1 netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
-  secrets:
-  - id: /cloud_init/users/admin/ssh_key
-    type: ssh_key
   vars:
     cloud_init:
       hostname: unifi
       users:
       - name: admin
         authorized_keys:
-        - '{{ (secret "/cloud_init/users/admin/ssh_key").public_key }}'
+        - '{{ (shared_secret "/cloud_init/users/admin/ssh_key").public_key }}'
       packages:
       - openssh-server
       networks:
@@ -155,3 +256,98 @@ hosts:
         mounts:
         - partition: /dev/sda4
           path: /root
+- mac: "b8:27:eb:87:cf:c5"
+  kernel:
+    path: "deps/arm64/kernel"
+  initrds:
+  - path: "deps/arm64/initrd"
+  files:
+  - id: cloud_init_metadata
+    path: configs/shared/meta-data
+    template: true
+  - id: cloud_init_networking
+    path: configs/shared/network-config
+    template: true
+  - id: cloud_init_userdata
+    path: configs/shared/user-data
+    template: true
+  - id: disk_image
+    path: deps/arm64/root.img
+    gzip: true
+  boot_args:
+  - "console=ttyAMA0,115200 console=tty1 netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
+  vars:
+    cloud_init:
+      hostname: ceph0
+      users:
+      - name: admin
+        authorized_keys:
+        - '{{ (shared_secret "/cloud_init/users/admin/ssh_key").public_key }}'
+      packages:
+      - openssh-server
+      networks:
+      - interface: eth0
+    installer:
+      files:
+      - url: '{{ file_url "cloud_init_metadata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/meta-data
+      - url: '{{ file_url "cloud_init_networking" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/network-config
+      - url: '{{ file_url "cloud_init_userdata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/user-data
+      disks:
+      - url: '{{ file_url "disk_image" }}'
+        gzip: true
+        dest_device: /dev/sda
+        mounts:
+        - partition: /dev/sda4
+          path: /root
+- mac: "b8:27:eb:5b:05:63"
+  kernel:
+    path: "deps/arm64/kernel"
+  initrds:
+  - path: "deps/arm64/initrd"
+  files:
+  - id: cloud_init_metadata
+    path: configs/shared/meta-data
+    template: true
+  - id: cloud_init_networking
+    path: configs/shared/network-config
+    template: true
+  - id: cloud_init_userdata
+    path: configs/shared/user-data
+    template: true
+  - id: disk_image
+    path: deps/arm64/root.img
+    gzip: true
+  boot_args:
+  - "console=ttyAMA0,115200 console=tty1 netboot_installer={{ .vars.installer | toRawJson | b64enc }}"
+  vars:
+    cloud_init:
+      hostname: ceph1
+      users:
+      - name: admin
+        authorized_keys:
+        - '{{ (shared_secret "/cloud_init/users/admin/ssh_key").public_key }}'
+      packages:
+      - openssh-server
+      networks:
+      - interface: eth0
+    installer:
+      files:
+      - url: '{{ file_url "cloud_init_metadata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/meta-data
+      - url: '{{ file_url "cloud_init_networking" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/network-config
+      - url: '{{ file_url "cloud_init_userdata" }}'
+        dest: /root/var/lib/cloud/seed/nocloud/user-data
+      disks:
+      - url: '{{ file_url "disk_image" }}'
+        gzip: true
+        dest_device: /dev/sda
+        mounts:
+        - partition: /dev/sda4
+          path: /root
+shared_secrets:
+- id: /cloud_init/users/admin/ssh_key
+  type: ssh_key

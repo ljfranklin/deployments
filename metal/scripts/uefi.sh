@@ -98,7 +98,9 @@ if [ -z "${output_file}" ]; then
 fi
 
 dd if=/dev/zero "of=${output_file}" bs=1024 count=50000
-parted "${output_file}" --script -- mklabel gpt
+# TODO(ljfranklin): raspberry pi sdcard boot doesn't work with gpt
+# parted "${output_file}" --script -- mklabel gpt
+parted "${output_file}" --script -- mklabel msdos
 parted "${output_file}" --script -- mkpart primary fat32 4096s 100%
 sudo losetup -o "$((4096 * 512))" -f "${output_file}"
 loop_device="$(losetup -j "${output_file}" | grep -o '/dev/loop[0-9]\+')"
@@ -266,11 +268,11 @@ build_flash_espressobin() {
     popd > /dev/null
     git clone https://github.com/MarvellEmbeddedProcessors/mv-ddr-marvell
     pushd mv-ddr-marvell > /dev/null
-      git reset --hard 02e23dbcf8dd22e038986052d99319a0eba8f25f
+      git reset --hard d5acc10c287e40cc2feeb28710b92e45c93c702c
     popd > /dev/null
     git clone https://github.com/MarvellEmbeddedProcessors/A3700-utils-marvell
     pushd A3700-utils-marvell > /dev/null
-      git reset --hard 2efdb10f3524c534d276002adf81fec06e0f1cf2
+      git reset --hard 1d977157e37151b272f88f2406a245c833fb2d8c
     popd > /dev/null
     mkdir arm-gcc
     pushd arm-gcc > /dev/null
@@ -287,10 +289,11 @@ build_flash_espressobin() {
       all \
       mrvl_flash \
       mrvl_uart
+    make -C A3700-utils-marvell/wtptp/src/Wtpdownloader_Linux -f makefile.mk
 
     uart_dir="${img_dir}/uart"
     mkdir "${uart_dir}"
-    cp "$PWD/A3700-utils-marvell/wtptp/linux/WtpDownload_linux" "${uart_dir}"
+    cp "$PWD/A3700-utils-marvell/wtptp/src/Wtpdownloader_Linux/WtpDownload_linux" "${uart_dir}"
     cp "$PWD"/atf/build/a3700/debug/uart-images/{TIM_ATF.bin,wtmi_h.bin,boot-image_h.bin} "${uart_dir}"
     cp "$PWD/atf/build/a3700/debug/flash-image.bin" "${img_dir}"
     cat << 'EOF' > "${uart_dir}/flash.sh"
@@ -308,6 +311,7 @@ uart_device="${1:-/dev/ttyUSB0}"
 uart_index=${uart_device#/dev/ttyUSB}
 
 pushd "${my_dir}" > /dev/null
+  chmod +x ./WtpDownload_linux
   ./WtpDownload_linux -P UART -C "${uart_index}" -R 115200 \
     -B ./TIM_ATF.bin -I ./wtmi_h.bin \
     -I ./boot-image_h.bin -E
@@ -328,7 +332,7 @@ EOF
 4. Put SD card into espressobin and connect USB cable
 5. Connect to UART: `sudo screen -L /dev/ttyUSB0 115200`
 6. Type `wtp` in UART
-7. In another terminal, run `sudo uart/flash.sh`
+7. In another terminal, run `chmod +x uart/flash.sh; sudo uart/flash.sh`
 8. Wait for "Success" message
 9. Reconnect to UART with `screen`
 10. Once bootloader reloads, run `bubt flash-image.bin spi mmc`
@@ -339,9 +343,8 @@ EOF
    - J11 (middle): 2-3 (left)
    - J10 (bottom): 1-2 (right)
 13. At U-boot prompt, enter:
-   `env set bootcmd "load mmc 0:1 ${scriptaddr} boot.scr; source ${scriptaddr}"; env save`
+   `setenv scriptaddr 0x6d00000; env set bootcmd "load mmc 0:1 ${scriptaddr} boot.scr; source ${scriptaddr}"; env save`
 EOF
-    chmod +x "${uart_dir}/flash.sh"
 
     cp "${project_dir}"/templates/espressobin/boot.txt "${img_dir}/"
     mkimage -A arm -T script -C none -d "${img_dir}/boot.txt" "${img_dir}/boot.scr"
