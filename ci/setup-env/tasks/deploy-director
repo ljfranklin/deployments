@@ -7,13 +7,11 @@ workspace_dir="$( cd "${deployments_dir}/.." && pwd )"
 
 # env
 : ${GCP_CREDENTIALS_JSON:?}
-: ${BOSH_BOT_SECRETS:?}
 
 # inputs
 terraform_config="$( cd "${workspace_dir}/terraform" && pwd )"
 ssl_certs_dir="$( cd "${workspace_dir}/ssl-certs" && pwd )"
 bosh_deployment_dir="$( cd "${workspace_dir}/bosh-deployment" && pwd )"
-bosh_bot_dir="$( cd "${workspace_dir}/bosh-bot" && pwd )"
 input_vars_store="$( cd "${workspace_dir}/director-vars-store" && pwd )"
 bosh_cli=$( echo ${workspace_dir}/bosh-cli/bosh-cli-* )
 chmod +x "${bosh_cli}"
@@ -39,9 +37,7 @@ pushd "${working_dir}" > /dev/null
     -o ./ops/ssl-cert.yml \
     -o ./ops/default-ssh.yml \
     -o ./ops/service-scopes.yml \
-    -o "${bosh_bot_dir}/bosh/bosh-ops-file.yml" \
     -l "${terraform_config}/metadata" \
-    -l <( echo "${BOSH_BOT_SECRETS}" ) \
     --var-file ssl_cert="$( ls ${ssl_certs_dir}/certificates/*.crt | grep -v 'issuer.crt')" \
     --var-file ssl_key="$( echo ${ssl_certs_dir}/certificates/*.key )" \
     -v director_name=bosh \

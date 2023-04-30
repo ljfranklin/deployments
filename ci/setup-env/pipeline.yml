@@ -34,7 +34,6 @@ jobs:
           - get: bosh-cli
           - get: director-vars-store
           - get: bosh-deployment
-          - get: bosh-bot
         - put: terraform
           params:
             env_name: lyle-deployments
@@ -44,7 +43,6 @@ jobs:
           output_mapping: {output-src: updated-deployments-src}
           params:
             GCP_CREDENTIALS_JSON: ((gce_credentials_json))
-            BOSH_BOT_SECRETS: ((bosh_bot_secrets))
           ensure:
             do:
             - task: commit-state-file
@@ -149,10 +147,6 @@ resources:
     type: git
     source:
       uri: https://github.com/cloudfoundry/bosh-deployment.git
-  - name: bosh-bot
-    type: git
-    source:
-      uri: https://github.com/ljfranklin/bosh-bot.git
   - name: bosh-cli
     type: s3
     source:
